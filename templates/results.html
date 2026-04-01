@@ -6,15 +6,60 @@
 </head>
 <body>
     <div class="container">
-        <h1>Recipes for "{{ ingredients }}"</h1>
+        <h1>👨‍🍳 Recipes for "{{ ingredients }}"</h1>
 
-        <ul>
-            {% for recipe in recipes %}
-                <li>{{ recipe }}</li>
+        {% if budget %}
+            <p class="budget-tag">💰 Budget: ${{ budget }}</p>
+        {% endif %}
+
+        {% if error %}
+            <p class="error">Something went wrong: {{ error }}</p>
+        {% elif meals %}
+            {% for meal in meals %}
+            <details class="meal-card">
+                <summary>
+                    <span class="meal-name">{{ meal.name }}</span>
+                    <span class="meal-desc">{{ meal.description }}</span>
+                    <span class="dropdown-icon">▼</span>
+                </summary>
+
+                <div class="meal-body">
+                    <div class="section">
+                        <h3>🧺 Ingredients You Have</h3>
+                        <ul>
+                            {% for item in meal.core_ingredients %}
+                                <li>{{ item }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                    {% if meal.additional_ingredients %}
+                    <div class="section">
+                        <h3>🛒 Additional Ingredients to Buy</h3>
+                        <ul>
+                            {% for item in meal.additional_ingredients %}
+                                <li>{{ item }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+
+                    <div class="section">
+                        <h3>📋 Instructions</h3>
+                        <ol>
+                            {% for step in meal.instructions %}
+                                <li>{{ step }}</li>
+                            {% endfor %}
+                        </ol>
+                    </div>
+                </div>
+            </details>
             {% endfor %}
-        </ul>
+        {% else %}
+            <p>No recipes found. Please try again.</p>
+        {% endif %}
 
-        <a href="/">⬅ Try again</a>
+        <a href="/" class="back-link">⬅ Try again</a>
     </div>
 </body>
 </html>

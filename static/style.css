@@ -9,21 +9,134 @@ body {
     background: white;
     padding: 30px;
     border-radius: 10px;
-    width: 400px;
+    width: 500px;
     margin: auto;
 }
 
+label {
+    display: block;
+    margin: 15px 0 5px;
+    font-weight: bold;
+    text-align: left;
+    color: #444;
+}
+
 input {
-    width: 80%;
+    width: 90%;
     padding: 10px;
-    margin: 10px 0;
+    margin: 5px 0;
+    border: 1px solid #ddd;
+    border-radius: 5px;
 }
 
 button {
+    margin-top: 15px;
     padding: 10px 20px;
     background: #ff914d;
     border: none;
     color: white;
     cursor: pointer;
     border-radius: 5px;
+    font-size: 16px;
+}
+
+button:hover {
+    background: #e07a3a;
+}
+
+.budget-tag {
+    display: inline-block;
+    background: #fff3e0;
+    color: #e07a3a;
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.meal-card {
+    background: #fff8f4;
+    border: 1px solid #ffd5b5;
+    border-radius: 10px;
+    margin: 15px 0;
+    text-align: left;
+    overflow: hidden;
+}
+
+.meal-card summary {
+    padding: 16px 20px;
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.meal-card summary::-webkit-details-marker {
+    display: none;
+}
+
+.meal-name {
+    font-size: 18px;
+    font-weight: bold;
+    color: #ff914d;
+    padding-right: 24px;
+}
+
+.meal-desc {
+    font-size: 13px;
+    color: #777;
+    margin-top: 4px;
+}
+
+.dropdown-icon {
+    position: absolute;
+    right: 16px;
+    top: 16px;
+    font-size: 12px;
+    color: #ff914d;
+    transition: transform 0.2s;
+}
+
+.meal-card[open] .dropdown-icon {
+    transform: rotate(180deg);
+}
+
+.meal-body {
+    padding: 0 20px 20px;
+    border-top: 1px solid #ffd5b5;
+}
+
+.section {
+    margin-top: 16px;
+}
+
+.section h3 {
+    font-size: 15px;
+    color: #555;
+    margin-bottom: 8px;
+}
+
+.section ul, .section ol {
+    padding-left: 20px;
+    color: #333;
+    font-size: 14px;
+    line-height: 1.8;
+}
+
+.back-link {
+    display: inline-block;
+    margin-top: 25px;
+    color: #ff914d;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.back-link:hover {
+    text-decoration: underline;
+}
+
+.error {
+    color: red;
+    font-size: 14px;
 }
