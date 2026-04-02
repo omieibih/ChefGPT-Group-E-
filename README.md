@@ -83,7 +83,7 @@ If Python is not installed, download it from [python.org/downloads](https://pyth
 ### **2️ Clone the Repository**
 
 ```powershell
-git clone https://github.com/Jason520-apple/ChefGPT-Group-E-.git
+git clone https://github.com/omieibih/ChefGPT-Group-E-.git
 cd ChefGPT-Group-E-
 ```
 
