@@ -25,43 +25,16 @@ python --version
 If Python is not installed, download it from:
 https://www.python.org/downloads/
 
-### **Frontend**
-* **HTML**
-* **CSS**
+2. Install pytest and flask
 
-### **Backend**
-* **Python**
-* **Flask**
-
-### **AI**
-* **Groq API** (LLaMA 3.3 70B model)
+pip install flask pytest
 
 To execute all test cases, run:
 
 pytest -v <optionally, test file name goes here; ex: tests/test_IngredientSuggestion.py>
 
-1. The user enters available ingredients into the input field.
-2. The user optionally enters a budget for buying extra ingredients.
-3. The Groq AI processes the input and generates 3 meal suggestions.
-4. Each meal is displayed in a dropdown card with:
-   - Ingredients the user already has
-   - Additional ingredients to buy (with estimated prices)
-   - Step-by-step cooking instructions
 
-python run_tests.py
 
-```
-ChefGPT/
-│
-├── app.py
-├── requirements.txt
-├── templates/
-│   ├── index.html
-│   └── results.html
-├── static/
-│   └── style.css
-└── README.md
-```
 
 ---
 
@@ -201,6 +174,40 @@ The tests cover:
 * Proper error handling when the API fails
 
 ---
+
+
+### **Frontend**
+* **HTML**
+* **CSS**
+
+### **Backend**
+* **Python**
+* **Flask**
+
+### **AI**
+* **Groq API** (LLaMA 3.3 70B model)
+
+1. The user enters available ingredients into the input field.
+2. The user optionally enters a budget for buying extra ingredients.
+3. The Groq AI processes the input and generates 3 meal suggestions.
+4. Each meal is displayed in a dropdown card with:
+   - Ingredients the user already has
+   - Additional ingredients to buy (with estimated prices)
+   - Step-by-step cooking instructions
+
+
+```
+ChefGPT/
+│
+├── app.py
+├── requirements.txt
+├── templates/
+│   ├── index.html
+│   └── results.html
+├── static/
+│   └── style.css
+└── README.md
+```
 
 ##  **Contribution Guidelines**
 
