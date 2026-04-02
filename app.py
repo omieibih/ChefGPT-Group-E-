@@ -5,6 +5,10 @@ from groq import Groq
 
 app = Flask(__name__)
 
+
+# -----------------------------------------------
+# AI-powered recipe generator (used by main app)
+# -----------------------------------------------
 def get_recipes(ingredients, budget):
     client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
@@ -41,6 +45,31 @@ Respond ONLY with a raw JSON array — no markdown, no code fences, no explanati
     return meals
 
 
+# -----------------------------------------------
+# Mock ingredient suggester (used by test cases)
+# -----------------------------------------------
+def get_ingredients(user_input):
+    """
+    Returns a list of suggested ingredients based on user input.
+    Mock function used for unit testing purposes.
+    """
+    user_input = user_input.lower().strip()
+
+    if "high protein" in user_input:
+        return ["chicken", "eggs", "greek yogurt", "beans"]
+    elif "cheap" in user_input:
+        return ["rice", "pasta", "potatoes", "canned tuna"]
+    elif "vegan" in user_input:
+        return ["tofu", "lentils", "quinoa", "spinach"]
+    elif user_input == "":
+        return ["Please enter a request."]
+    else:
+        return ["tomatoes", "onions", "garlic", "chicken"]
+
+
+# -----------------------------------------------
+# Routes
+# -----------------------------------------------
 @app.route("/")
 def home():
     return render_template("index.html")
