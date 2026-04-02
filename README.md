@@ -6,68 +6,36 @@ ChefGPT helps reduce food waste, save time, and simplify meal planning.
 
 ---
 
-##  **Authors**
+### **Setup Instructions (Reviewer)**
 
-* Ana Moron Cervantes
-* Opeoluwa Orisadahunsi
-* Favour Aloziem
-* Nicholas Watson
-* Jason Vo
-* RJ Cortez
-* Omieibi Harcourt
 
----
+1. Install Python
 
-##  **Features**
+Make sure Python 3 is installed on your system.
 
-*  Ingredient-based recipe generation
-*  Step-by-step cooking instructions
-*  Clean and responsive user interface
-*  Firebase backend integration
-*  User authentication (if implemented)
-*  Save and retrieve recipes
+Check with:
 
----
+python --version
 
-##  **Tech Stack**
+If Python is not installed, download it from:
+https://www.python.org/downloads/
 
-### **Frontend**
+2. Install Required Packages
 
-* **HTML**
-* **CSS**
-* **Python**
+Run the following command in the project directory:
 
-### **Backend / Cloud Services**
+pip install flask pytest
 
-* **Firebase Authentication**
-* **Firebase Firestore**
-* **Firebase Hosting**
-* **Gemini API**
+Running Unit Tests
 
----
+To execute all test cases, run:
 
-##  **How It Works**
+pytest -v <optionally, test file name goes here; ex: tests/test_IngredientSuggestion.py>
 
-1. The user enters available ingredients into the input field.
-2. The application processes the ingredients.
-3. A matching recipe is generated.
-4. The recipe is displayed with cooking instructions.
-5. An image is generated.
-6. (Features in progress): The recipe can be saved to the user's account.
+Alternatively, you can run:
 
----
+python run_tests.py
 
-##  **Project Structure**
-
-```
-ChefGPT/
-│
-├── index.html
-├── style.css
-├── script.js
-├── firebase-config.js
-└── README.md
-```
 
 ---
 
@@ -133,32 +101,7 @@ firebase serve
 ```
 
 ---
-Setup Instructions (Reviewer)
-1. Install Python
 
-Make sure Python 3 is installed on your system.
-
-Check with:
-
-python --version
-
-If Python is not installed, download it from:
-https://www.python.org/downloads/
-
-2. Install Required Packages
-
-Run the following command in the project directory:
-
-pip install flask pytest
-Running Unit Tests
-
-To execute all test cases, run:
-
-pytest -v
-
-Alternatively, you can run:
-
-python run_tests.py
 
 ##  **Usage Guidelines**
 
@@ -194,6 +137,70 @@ git push origin feature-name
 
 5. Submit a Pull Request.
 
+---
+
+##  **Authors**
+
+* Ana Moron Cervantes
+* Opeoluwa Orisadahunsi
+* Favour Aloziem
+* Nicholas Watson
+* Jason Vo
+* RJ Cortez
+* Omieibi Harcourt
+
+---
+
+##  **Features**
+
+*  Ingredient-based recipe generation
+*  Step-by-step cooking instructions
+*  Clean and responsive user interface
+*  Firebase backend integration
+*  User authentication (if implemented)
+*  Save and retrieve recipes
+
+---
+
+##  **Tech Stack**
+
+### **Frontend**
+
+* **HTML**
+* **CSS**
+* **Python**
+
+### **Backend / Cloud Services**
+
+* **Firebase Authentication**
+* **Firebase Firestore**
+* **Firebase Hosting**
+* **Gemini API**
+
+---
+
+##  **How It Works**
+
+1. The user enters available ingredients into the input field.
+2. The application processes the ingredients.
+3. A matching recipe is generated.
+4. The recipe is displayed with cooking instructions.
+5. An image is generated.
+6. (Features in progress): The recipe can be saved to the user's account.
+
+---
+
+##  **Project Structure**
+
+```
+ChefGPT/
+│
+├── index.html
+├── style.css
+├── script.js
+├── firebase-config.js
+└── README.md
+```
 ---
 
 ##  **Future Improvements**
