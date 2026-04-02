@@ -1,5 +1,12 @@
 # Reviewer runs it with:
-# pytest -v test_ai_ingredientSuggestion.py
+# pytest -v tests/test_ai_ingredientSuggestion.py
+
+import sys
+import os
+
+# Add the parent folder of app.py to Python path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 
 
 # test_ai_ingredient.py
