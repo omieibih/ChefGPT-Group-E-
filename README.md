@@ -6,19 +6,12 @@ ChefGPT helps reduce food waste, save time, and simplify meal planning.
 
 ---
 
-##  **Authors**
+### **Setup Instructions (Reviewer)**
 
-* Ana Moron Cervantes
-* Opeoluwa Orisadahunsi
-* Favour Aloziem
-* Nicholas Watson
-* Jason Vo
-* RJ Cortez
-* Omieibi Harcourt
 
----
+1. Install Python
 
-##  **Features**
+Make sure Python 3 is installed on your system.
 
 *  Ingredient-based recipe generation powered by AI
 *  Optional budget input to tailor additional ingredient suggestions
@@ -27,9 +20,10 @@ ChefGPT helps reduce food waste, save time, and simplify meal planning.
 *  Itemized list of ingredients you already have vs. ingredients to buy
 *  Clean and responsive user interface
 
----
+python --version
 
-##  **Tech Stack**
+If Python is not installed, download it from:
+https://www.python.org/downloads/
 
 ### **Frontend**
 * **HTML**
@@ -42,9 +36,9 @@ ChefGPT helps reduce food waste, save time, and simplify meal planning.
 ### **AI**
 * **Groq API** (LLaMA 3.3 70B model)
 
----
+To execute all test cases, run:
 
-##  **How It Works**
+pytest -v <optionally, test file name goes here; ex: tests/test_IngredientSuggestion.py>
 
 1. The user enters available ingredients into the input field.
 2. The user optionally enters a budget for buying extra ingredients.
@@ -54,9 +48,7 @@ ChefGPT helps reduce food waste, save time, and simplify meal planning.
    - Additional ingredients to buy (with estimated prices)
    - Step-by-step cooking instructions
 
----
-
-##  **Project Structure**
+python run_tests.py
 
 ```
 ChefGPT/
@@ -233,6 +225,70 @@ git push origin feature-name
 
 5. Submit a Pull Request.
 
+---
+
+##  **Authors**
+
+* Ana Moron Cervantes
+* Opeoluwa Orisadahunsi
+* Favour Aloziem
+* Nicholas Watson
+* Jason Vo
+* RJ Cortez
+* Omieibi Harcourt
+
+---
+
+##  **Features**
+
+*  Ingredient-based recipe generation
+*  Step-by-step cooking instructions
+*  Clean and responsive user interface
+*  Firebase backend integration
+*  User authentication (if implemented)
+*  Save and retrieve recipes
+
+---
+
+##  **Tech Stack**
+
+### **Frontend**
+
+* **HTML**
+* **CSS**
+* **Python**
+
+### **Backend / Cloud Services**
+
+* **Firebase Authentication**
+* **Firebase Firestore**
+* **Firebase Hosting**
+* **Gemini API**
+
+---
+
+##  **How It Works**
+
+1. The user enters available ingredients into the input field.
+2. The application processes the ingredients.
+3. A matching recipe is generated.
+4. The recipe is displayed with cooking instructions.
+5. An image is generated.
+6. (Features in progress): The recipe can be saved to the user's account.
+
+---
+
+##  **Project Structure**
+
+```
+ChefGPT/
+│
+├── index.html
+├── style.css
+├── script.js
+├── firebase-config.js
+└── README.md
+```
 ---
 
 ##  **Future Improvements**

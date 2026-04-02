@@ -1,0 +1,134 @@
+name: ChefGPT CI/CD (Test + Pages Deploy)
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python environment
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Fix requirements.txt encoding if needed
+        shell: bash
+        run: |
+          python - << 'PY'
+          from pathlib import Path
+          p = Path("requirements.txt")
+          b = p.read_bytes()
+          if b"\x00" in b:
+              print("Detected UTF-16/NULL bytes. Converting requirements.txt -> UTF-8...")
+              import subprocess
+              subprocess.run(["bash","-lc","sudo apt-get update && sudo apt-get install -y dos2unix"], check=True)
+              # Try UTF-16, fall back to UTF-16LE
+              subprocess.run(["bash","-lc","iconv -f UTF-16 -t UTF-8 requirements.txt -o requirements.txt || iconv -f UTF-16LE -t UTF-8 requirements.txt -o requirements.txt"], check=True)
+              subprocess.run(["bash","-lc","dos2unix requirements.txt || true"], check=False)
+          else:
+              print("requirements.txt looks OK.")
+          PY
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Quick compile check
+        run: |
+          python -m py_compile app.py
+
+      - name: Smoke test Flask routes
+        shell: bash
+        run: |
+          # Start Flask in background
+          python app.py &
+          APP_PID=$!
+
+          # Home page should return 200
+          for i in {1..15}; do
+              if curl -sSf http://127.0.0.1:5000/ > /dev/null; then
+                echo "Server is up!"
+                break
+              fi
+              sleep 1
+          done
+
+          # Test routes
+          curl -sSf http://127.0.0.1:5000/ > /dev/null
+          curl -sSf -X POST -d "ingredients=chicken,rice" http://127.0.0.1:5000/results > /dev/null
+
+          # Stop server
+          kill $APP_PID
+
+      - name: Build static Pages artifact from templates
+        shell: bash
+        run: |
+          rm -rf site
+          mkdir -p site/static
+
+          # Copy static assets
+          cp -r static/* site/static/
+
+          # Create static HTML pages from templates (simple + reliable approach)
+          # Patch absolute paths so GH Pages subpath works
+          sed 's|href="/static/style.css"|href="static/style.css"|g; s|action="/results"|action="results.html"|g' templates/index.html > site/index.html
+          sed 's|href="/static/style.css"|href="static/style.css"|g; s|href="/"|href="index.html"|g' templates/results.html > site/results.html
+
+          # Render the Jinja template loop in results.html by replacing it with sample data
+          python - << 'PY'
+          from pathlib import Path
+          import re
+
+          p = Path("site/results.html")
+          html = p.read_text()
+
+          # Replace {{ ingredients }}
+          html = html.replace('{{ ingredients }}', 'chicken, rice')
+
+          # Replace the Jinja loop with sample list items
+          loop_pattern = re.compile(r"{% for recipe in recipes %}.*?{% endfor %}", re.DOTALL)
+          sample_items = "\n                <li>chicken, rice Stir Fry</li>\n                <li>chicken, rice Pasta</li>\n                <li>chicken, rice Soup</li>\n            "
+          html = loop_pattern.sub(sample_items, html)
+
+          # Remove any leftover Jinja braces (safe cleanup)
+          html = html.replace("{{ recipe }}", "")
+
+          p.write_text(html)
+          print("Static site built in ./site")
+          PY
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy_pages:
+    runs-on: ubuntu-latest
+    needs: build_and_test
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,12 +1,12 @@
 body {
     font-family: Arial, sans-serif;
-    background: #f7f7f7;
+    background: #933c3ce7;  
     text-align: center;
     padding: 40px;
 }
 
 .container {
-    background: white;
+    background: rgb(2, 233, 102);
     padding: 30px;
     border-radius: 10px;
     width: 500px;
