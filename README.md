@@ -133,24 +133,32 @@ firebase serve
 ```
 
 ---
+Setup Instructions (Reviewer)
+1. Install Python
 
-##  **Screenshots**
+Make sure Python 3 is installed on your system.
 
-### **Home Page**
+Check with:
 
-```
-(Add screenshot here: screenshots/home.png)
-```
+python --version
 
-### **Generated Recipe Example**
+If Python is not installed, download it from:
+https://www.python.org/downloads/
 
-```
-(Add screenshot here: screenshots/recipe.png)
-```
+2. Install Required Packages
 
-*(Replace placeholders with actual images from your project.)*
+Run the following command in the project directory:
 
----
+pip install flask pytest
+Running Unit Tests
+
+To execute all test cases, run:
+
+pytest -v
+
+Alternatively, you can run:
+
+python run_tests.py
 
 ##  **Usage Guidelines**
 
