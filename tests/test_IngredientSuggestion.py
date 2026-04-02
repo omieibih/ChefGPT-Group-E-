@@ -1,5 +1,5 @@
 # Reviewer runs it with:
-# pytest -v tests/test_ai_ingredientSuggestion.py
+# pytest -v tests/test_IngredientSuggestion.py
 
 import sys
 import os
