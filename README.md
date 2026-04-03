@@ -118,7 +118,15 @@ firebase.initializeApp(firebaseConfig);
 ```
 
 ---
+## Running Unit Tests
 
+1. Make sure you are in the project directory
+
+2. (Optional) Activate virtual environment
+   source venv/bin/activate
+
+3. Run the unit tests:
+   python3 -m unittest backend/test_dietary_filters.py
 ### **4️ Run the Application**
 
 **Option 1:**
