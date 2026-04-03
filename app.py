@@ -94,6 +94,38 @@ def get_nutrition(food_name):
 
     return "Food not found."
 
+
+# -----------------------------------------------
+# Favorites (used by test cases)
+# -----------------------------------------------
+_favorites = []
+
+def save_recipe(name):
+    """
+    Saves a recipe to the favorites list.
+    Returns True on success, or an error message string for invalid input.
+    """
+    if name == "":
+        return "Please enter a recipe name."
+    if name in _favorites:
+        return True  # already saved, no duplicate
+    _favorites.append(name)
+    return True
+
+def get_favorites():
+    """
+    Returns the current list of saved favorite recipes.
+    """
+    return _favorites
+
+def remove_recipe(name):
+    """
+    Removes a recipe from the favorites list if it exists.
+    """
+    if name in _favorites:
+        _favorites.remove(name)
+
+
 # -----------------------------------------------
 # Routes
 # -----------------------------------------------
