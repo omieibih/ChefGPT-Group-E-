@@ -89,8 +89,20 @@ npm install -g firebase-tools
 ```
 
 ---
+## Installation Dependencies
 
-### **3️ Configure Firebase**
+1. Clone the Repository
+...
+
+ 2. Install Dependencies
+pip install -r requirements.txt
+
+ 3. Run the Application
+...
+
+ 4. Running Unit Tests
+...
+ **3️ Configure Firebase**
 
 1. Go to the Firebase Console.
 
