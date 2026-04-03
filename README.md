@@ -27,7 +27,7 @@ https://www.python.org/downloads/
 
 2. Install pytest and flask
 
-pip install flask pytest
+pip install flask pytest groq
 
 To execute all test cases, run:
 
