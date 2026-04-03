@@ -3,14 +3,18 @@
 
 import sys
 import os
+import pytest
 
 # Add the parent folder of app.py to Python path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
+from app import save_recipe, get_favorites, remove_recipe, _favorites
 
-
-# test_save_recipe_to_favorites.py
-from app import save_recipe, get_favorites, remove_recipe
+# Clear favorites before each test to prevent leftover data from affecting results
+@pytest.fixture(autouse=True)
+def clear_favorites():
+    _favorites.clear()
+    yield
 
 # Test 1: Save a valid recipe
 def test_save_valid_recipe():
