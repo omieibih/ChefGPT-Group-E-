@@ -103,7 +103,7 @@ pip install -r requirements.txt
 
  5. Running Unit Tests
 ...
- **3️ Configure Firebase**
+## **3️ Configure Firebase**
 
 1. Go to the Firebase Console.
 
