@@ -95,12 +95,13 @@ npm install -g firebase-tools
 ...
 
  2. Install Dependencies
+    
 pip install -r requirements.txt
 
- 3. Run the Application
+ 4. Run the Application
 ...
 
- 4. Running Unit Tests
+ 5. Running Unit Tests
 ...
  **3️ Configure Firebase**
 
