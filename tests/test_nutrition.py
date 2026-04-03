@@ -1,8 +1,5 @@
-<<<<<<< HEAD
-=======
 # Reviewer runs it with:
 # PYTHONPATH=. pytest -v tests/test_nutrition.py
->>>>>>> dd96440 (Add nutrition tests)
 from app import get_nutrition
 
 # Test 1: Valid food returns a dictionary with expected keys
