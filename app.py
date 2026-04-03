@@ -1,7 +1,6 @@
 from flask import Flask, render_template, request
 import os
 import json
-from groq import Groq
 
 app = Flask(__name__)
 
@@ -10,6 +9,9 @@ app = Flask(__name__)
 # AI-powered recipe generator (used by main app)
 # -----------------------------------------------
 def get_recipes(ingredients, budget):
+
+    from groq import Groq
+
     client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
     budget_text = f"The user has a budget of ${budget} to spend on additional ingredients." if budget else "The user has no specific budget — suggest affordable additions."
