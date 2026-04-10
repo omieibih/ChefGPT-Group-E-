@@ -7,6 +7,7 @@
 <body>
     <div class="container">
         <h1>👨‍🍳 ChefGPT</h1>
+<<<<<<< HEAD
         <p>Enter your ingredients and we'll suggest meals tailored to you!</p>
 
         <!-- User info bar -->
@@ -24,6 +25,18 @@
             <input type="number" id="budget" name="budget" placeholder="e.g. 20" min="0" step="0.01">
 
             <button type="submit">Generate Recipes</button>
+=======
+        <p>First, choose your experience level:</p>
+        <form action="/ingredients" method="POST">
+            <label for="experience">🍳 What's your cooking experience?</label>
+            <select id="experience_level" name="experience_level" required>
+                <option value="Beginner" selected>Beginner</option>
+                <option value="Intermediate">Intermediate</option>
+                <option value="Advanced">Advanced</option>
+            </select>
+            
+            <button type="submit">Next</button>
+>>>>>>> 22f2afb (changes for experience level)
         </form>
     </div>
 
