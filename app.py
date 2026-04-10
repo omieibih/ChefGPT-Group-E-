@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request
 import os
 
+from backend.experience_filter import get_recipes
+
 app = Flask(__name__)
 
 # Mock recipe generator (replace with AI later)
