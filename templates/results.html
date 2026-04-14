@@ -6,15 +6,121 @@
 </head>
 <body>
     <div class="container">
-        <h1>Recipes for "{{ ingredients }}"</h1>
+        <h1>👨‍🍳 Recipes for "{{ ingredients }}"</h1>
 
-        <ul>
-            {% for recipe in recipes %}
-                <li>{{ recipe }}</li>
+        {% if budget %}
+            <p class="budget-tag">💰 Budget: ${{ budget }}</p>
+        {% endif %}
+
+        {% if error %}
+            <p class="error">Something went wrong: {{ error }}</p>
+        {% elif meals %}
+            {% for meal in meals %}
+            <details class="meal-card">
+                <summary>
+                    <span class="meal-name">{{ meal.name }}</span>
+                    <span class="meal-desc">{{ meal.description }}</span>
+                    <span class="dropdown-icon">▼</span>
+                </summary>
+
+                <div class="meal-body">
+                    <div class="section">
+                        <h3>🧺 Ingredients You Have</h3>
+                        <ul>
+                            {% for item in meal.core_ingredients %}
+                                <li>{{ item }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                    {% if meal.additional_ingredients %}
+                    <div class="section">
+                        <h3>🛒 Additional Ingredients to Buy</h3>
+                        <ul>
+                            {% for item in meal.additional_ingredients %}
+                                <li>{{ item }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+
+                    <div class="section">
+                        <h3>📋 Instructions</h3>
+                        <ol>
+                            {% for step in meal.instructions %}
+                                <li>{{ step }}</li>
+                            {% endfor %}
+                        </ol>
+                    </div>
+
+                    <!-- Save Recipe Button -->
+                    <button
+                        class="save-btn"
+                        data-name="{{ meal.name }}"
+                        data-ingredients="{{ meal.core_ingredients | join(', ') }}"
+                        data-instructions="{{ meal.instructions | join(' | ') }}">
+                        ⭐ Save Recipe
+                    </button>
+                    <span class="save-msg" style="display:none; margin-left:10px; color:green;">Saved!</span>
+                </div>
+            </details>
             {% endfor %}
-        </ul>
+        {% else %}
+            <p>No recipes found. Please try again.</p>
+        {% endif %}
 
-        <a href="/">⬅ Try again</a>
+        <a href="/" class="back-link">⬅ Try again</a>
     </div>
+
+    <script type="module">
+        import { auth } from "/static/firebase-config.js";
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+        // Wait for auth to be ready, then wire up save buttons
+        onAuthStateChanged(auth, async (user) => {
+            const buttons = document.querySelectorAll(".save-btn");
+
+            buttons.forEach(btn => {
+                btn.addEventListener("click", async () => {
+                    if (!user) {
+                        alert("Please log in to save recipes.");
+                        return;
+                    }
+
+                    // Get Firebase ID token to authenticate with backend
+                    const token = await user.getIdToken();
+
+                    const payload = {
+                        name: btn.dataset.name,
+                        ingredients: btn.dataset.ingredients,
+                        instructions: btn.dataset.instructions
+                    };
+
+                    try {
+                        const response = await fetch("/api/favorites", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "Authorization": "Bearer " + token
+                            },
+                            body: JSON.stringify(payload)
+                        });
+
+                        if (response.ok) {
+                            // Show "Saved!" message next to button
+                            const msg = btn.nextElementSibling;
+                            msg.style.display = "inline";
+                            btn.disabled = true;
+                            btn.textContent = "✅ Saved";
+                        } else {
+                            alert("Failed to save recipe. Please try again.");
+                        }
+                    } catch (e) {
+                        alert("Error saving recipe: " + e.message);
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>
