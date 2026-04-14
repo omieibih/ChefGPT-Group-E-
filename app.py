@@ -1,8 +1,33 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 import os
 import json
 
+import firebase_admin
+from firebase_admin import credentials, auth as firebase_auth
+
+from backend.favorites import save_favorite, get_favorites, delete_favorite
+
+# Initialize Firebase Admin SDK
+cred = credentials.Certificate("serviceAccountKey.json")
+firebase_admin.initialize_app(cred)
+
 app = Flask(__name__)
+
+
+# -----------------------------------------------
+# Auth middleware helper
+# -----------------------------------------------
+def get_current_user(request):
+    """Verifies Firebase ID token from Authorization header."""
+    auth_header = request.headers.get("Authorization", "")
+    if not auth_header.startswith("Bearer "):
+        return None
+    id_token = auth_header.split("Bearer ")[1]
+    try:
+        decoded = firebase_auth.verify_id_token(id_token)
+        return decoded
+    except Exception:
+        return None
 
 
 # -----------------------------------------------
@@ -68,6 +93,7 @@ def get_ingredients(user_input):
     else:
         return ["tomatoes", "onions", "garlic", "chicken"]
 
+
 # -----------------------------------------------
 # Mock nutrition breakdown (used by test cases)
 # -----------------------------------------------
@@ -96,32 +122,22 @@ def get_nutrition(food_name):
 
 
 # -----------------------------------------------
-# Favorites (used by test cases)
+# In-memory favorites (used by test cases)
 # -----------------------------------------------
 _favorites = []
 
 def save_recipe(name):
-    """
-    Saves a recipe to the favorites list.
-    Returns True on success, or an error message string for invalid input.
-    """
     if name == "":
         return "Please enter a recipe name."
     if name in _favorites:
-        return True  # already saved, no duplicate
+        return True
     _favorites.append(name)
     return True
 
-def get_favorites():
-    """
-    Returns the current list of saved favorite recipes.
-    """
+def get_favorites_local():
     return _favorites
 
 def remove_recipe(name):
-    """
-    Removes a recipe from the favorites list if it exists.
-    """
     if name in _favorites:
         _favorites.remove(name)
 
@@ -134,6 +150,16 @@ def home():
     return render_template("index.html")
 
 
+@app.route("/login")
+def login():
+    return render_template("login.html")
+
+
+@app.route("/favorites")
+def favorites_page():
+    return render_template("favorites.html")
+
+
 @app.route("/results", methods=["POST"])
 def results():
     ingredients = request.form.get("ingredients")
@@ -143,6 +169,35 @@ def results():
     except Exception as e:
         return render_template("results.html", meals=[], ingredients=ingredients, budget=budget, error=str(e))
     return render_template("results.html", meals=meals, ingredients=ingredients, budget=budget, error=None)
+
+
+# -----------------------------------------------
+# Firebase Favorites API Routes
+# -----------------------------------------------
+@app.route("/api/favorites", methods=["POST"])
+def api_save_favorite():
+    user = get_current_user(request)
+    if not user:
+        return jsonify({"error": "Unauthorized"}), 401
+    save_favorite(user, request.get_json())
+    return jsonify({"message": "Saved!"}), 200
+
+
+@app.route("/api/favorites", methods=["GET"])
+def api_get_favorites():
+    user = get_current_user(request)
+    if not user:
+        return jsonify({"error": "Unauthorized"}), 401
+    return jsonify(get_favorites(user)), 200
+
+
+@app.route("/api/favorites/<doc_id>", methods=["DELETE"])
+def api_delete_favorite(doc_id):
+    user = get_current_user(request)
+    if not user:
+        return jsonify({"error": "Unauthorized"}), 401
+    delete_favorite(doc_id)
+    return jsonify({"message": "Deleted"}), 200
 
 
 # Run server
