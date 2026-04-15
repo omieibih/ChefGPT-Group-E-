@@ -1,19 +1,22 @@
-#beginning of favorite feature in backend
-# SaveRecipeToFavorites.py
+from firebase_admin import firestore
 
-favorites = []
+# This file handles all Firebase Firestore operations for saving,
+# retrieving, and deleting favorite recipes.
 
-def save_recipe(recipe_name):
-    if recipe_name == "":
-        return "Please enter a recipe name."
-    if recipe_name in favorites:
-        return True  # Already saved, skip duplicate
-    favorites.append(recipe_name)
-    return True
+def save_favorite(user, data):
+    db_firestore = firestore.client()
+    db_firestore.collection("favorites").add({
+        "uid": user["uid"],
+        "name": data.get("name"),
+        "ingredients": data.get("ingredients"),
+        "instructions": data.get("instructions"),
+    })
 
-def get_favorites():
-    return favorites
+def get_favorites(user):
+    db_firestore = firestore.client()
+    docs = db_firestore.collection("favorites").where("uid", "==", user["uid"]).stream()
+    return [{"id": d.id, **d.to_dict()} for d in docs]
 
-def remove_recipe(recipe_name):
-    if recipe_name in favorites:
-        favorites.remove(recipe_name)
+def delete_favorite(doc_id):
+    db_firestore = firestore.client()
+    db_firestore.collection("favorites").document(doc_id).delete()

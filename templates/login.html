@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>ChefGPT – Login</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="auth-container">
+    <h1>🍳 ChefGPT</h1>
+    <p>Sign in to save ingredients and favorite recipes</p>
+
+    <div id="auth-error" class="error-msg" style="display:none;"></div>
+
+    <input type="email" id="email" placeholder="Email" />
+    <input type="password" id="password" placeholder="Password" />
+
+    <button id="login-btn">Log In</button>
+    <button id="signup-btn">Create Account</button>
+    <button id="google-btn">Sign in with Google</button>
+  </div>
+
+  <script type="module" src="/static/auth.js"></script>
+</body>
+</html>
