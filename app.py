@@ -6,10 +6,31 @@ import firebase_admin
 from firebase_admin import credentials, auth as firebase_auth
 
 from backend.favorites import save_favorite, get_favorites, delete_favorite
+from backend.ingredient_suggestions import generate_ingredient_suggestions
 
-# Initialize Firebase Admin SDK
-cred = credentials.Certificate("serviceAccountKey.json")
-firebase_admin.initialize_app(cred)
+
+# Security note: keep Firebase service-account secrets out of source control.
+# We load credentials from environment or a local ignored file to address
+# CWE-798 (Use of Hard-coded Credentials).
+def _load_firebase_credentials():
+    """Load Firebase Admin credentials from env vars or local fallback file."""
+    key_json = os.environ.get("FIREBASE_SERVICE_ACCOUNT_JSON")
+    if key_json:
+        return credentials.Certificate(json.loads(key_json))
+
+    key_path = os.environ.get("FIREBASE_SERVICE_ACCOUNT_PATH", "serviceAccountKey.json")
+    if os.path.exists(key_path):
+        return credentials.Certificate(key_path)
+
+    raise RuntimeError(
+        "Firebase credentials not found. Set FIREBASE_SERVICE_ACCOUNT_JSON or "
+        "FIREBASE_SERVICE_ACCOUNT_PATH."
+    )
+
+
+# Initialize Firebase Admin SDK once.
+if not firebase_admin._apps:
+    firebase_admin.initialize_app(_load_firebase_credentials())
 
 app = Flask(__name__)
 
@@ -37,6 +58,8 @@ def get_recipes(ingredients, budget):
 
     from groq import Groq
 
+    # Security note: API keys must come from environment variables, not literals,
+    # to avoid CWE-798 (Use of Hard-coded Credentials).
     client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
     budget_text = f"The user has a budget of ${budget} to spend on additional ingredients." if budget else "The user has no specific budget — suggest affordable additions."
@@ -171,33 +194,58 @@ def results():
     return render_template("results.html", meals=meals, ingredients=ingredients, budget=budget, error=None)
 
 
-# -----------------------------------------------
-# Firebase Favorites API Routes
-# -----------------------------------------------
+# Favorites API
 @app.route("/api/favorites", methods=["POST"])
 def api_save_favorite():
+    # Verify user identity from Firebase token in Authorization header.
     user = get_current_user(request)
     if not user:
         return jsonify({"error": "Unauthorized"}), 401
+
+    # Save one favorite recipe document for this user.
     save_favorite(user, request.get_json())
     return jsonify({"message": "Saved!"}), 200
 
 
 @app.route("/api/favorites", methods=["GET"])
 def api_get_favorites():
+    # Verify user identity.
     user = get_current_user(request)
     if not user:
         return jsonify({"error": "Unauthorized"}), 401
+
+    # Return all favorites owned by this user.
     return jsonify(get_favorites(user)), 200
 
 
 @app.route("/api/favorites/<doc_id>", methods=["DELETE"])
 def api_delete_favorite(doc_id):
+    # Verify user identity.
     user = get_current_user(request)
     if not user:
         return jsonify({"error": "Unauthorized"}), 401
+
+    # Delete one favorite by Firestore document id.
     delete_favorite(doc_id)
     return jsonify({"message": "Deleted"}), 200
+
+
+# Ingredient suggestions API
+@app.route("/api/ingredient-suggestions", methods=["GET"])
+def api_ingredient_suggestions():
+    # Verify the caller is logged in.
+    user = get_current_user(request)
+    if not user:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    # Load this user's saved favorite recipes.
+    favorites = get_favorites(user)
+
+    # Turn one favorite recipe into a small set of ingredient chips.
+    data = generate_ingredient_suggestions(user, favorites)
+
+    # Send JSON back to the floating assistant card.
+    return jsonify(data), 200
 
 
 # Run server

@@ -3,6 +3,7 @@ import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-aut
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
+  // Firebase Web API key belongs here (client-side key, not the Admin SDK private key).
   apiKey: "AIzaSyB2PHHd0ZK5R_OIQTavEpV130PKgsMnipo",
   authDomain: "chefgpt-users.firebaseapp.com",
   projectId: "chefgpt-users",

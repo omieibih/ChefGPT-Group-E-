@@ -9,3 +9,4 @@ MarkupSafe==3.0.3
 packaging==26.0
 Werkzeug==3.1.5
 groq
+firebase-admin==7.4.0
