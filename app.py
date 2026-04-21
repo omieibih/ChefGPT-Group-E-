@@ -10,7 +10,7 @@ from backend.ingredient_suggestions import generate_ingredient_suggestions
 
 
 # Security note: keep Firebase service-account secrets out of source control.
-# We load credentials from environment or a local ignored file to address
+# We will load credentials from environment or a local ignored file to address
 # CWE-798 (Use of Hard-coded Credentials).
 def _load_firebase_credentials():
     """Load Firebase Admin credentials from env vars or local fallback file."""
