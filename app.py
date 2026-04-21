@@ -28,9 +28,16 @@ def _load_firebase_credentials():
     )
 
 
-# Initialize Firebase Admin SDK once.
+# Initialize Firebase Admin SDK once, but do not crash local development if
+# credentials are not configured yet.
+FIREBASE_AVAILABLE = True
+FIREBASE_INIT_ERROR = None
 if not firebase_admin._apps:
-    firebase_admin.initialize_app(_load_firebase_credentials())
+    try:
+        firebase_admin.initialize_app(_load_firebase_credentials())
+    except Exception as e:
+        FIREBASE_AVAILABLE = False
+        FIREBASE_INIT_ERROR = str(e)
 
 app = Flask(__name__)
 
@@ -40,6 +47,9 @@ app = Flask(__name__)
 # -----------------------------------------------
 def get_current_user(request):
     """Verifies Firebase ID token from Authorization header."""
+    if not FIREBASE_AVAILABLE:
+        return None
+
     auth_header = request.headers.get("Authorization", "")
     if not auth_header.startswith("Bearer "):
         return None
@@ -197,6 +207,9 @@ def results():
 # Favorites API
 @app.route("/api/favorites", methods=["POST"])
 def api_save_favorite():
+    if not FIREBASE_AVAILABLE:
+        return jsonify({"error": "Firebase is not configured.", "details": FIREBASE_INIT_ERROR}), 503
+
     # Verify user identity from Firebase token in Authorization header.
     user = get_current_user(request)
     if not user:
@@ -209,6 +222,9 @@ def api_save_favorite():
 
 @app.route("/api/favorites", methods=["GET"])
 def api_get_favorites():
+    if not FIREBASE_AVAILABLE:
+        return jsonify({"error": "Firebase is not configured.", "details": FIREBASE_INIT_ERROR}), 503
+
     # Verify user identity.
     user = get_current_user(request)
     if not user:
