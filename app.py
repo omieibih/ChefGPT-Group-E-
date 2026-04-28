@@ -4,8 +4,16 @@ import json
 
 import firebase_admin
 from firebase_admin import credentials, auth as firebase_auth
+try:
+    from groq import Groq
+except Exception:
+    Groq = None
 
-from backend.favorites import save_favorite, get_favorites, delete_favorite
+from backend.favorites import (
+    save_favorite as firestore_save_favorite,
+    get_favorites as firestore_get_favorites,
+    delete_favorite as firestore_delete_favorite,
+)
 from backend.ingredient_suggestions import generate_ingredient_suggestions
 
 
@@ -55,8 +63,8 @@ def get_current_user(request):
 # AI-powered recipe generator (used by main app)
 # -----------------------------------------------
 def get_recipes(ingredients, budget):
-
-    from groq import Groq
+    if Groq is None:
+        raise RuntimeError("Groq SDK is not installed or failed to import.")
 
     # Security note: API keys must come from environment variables, not literals,
     # to avoid CWE-798 (Use of Hard-coded Credentials).
@@ -160,6 +168,9 @@ def save_recipe(name):
 def get_favorites_local():
     return _favorites
 
+def get_favorites():
+    return _favorites
+
 def remove_recipe(name):
     if name in _favorites:
         _favorites.remove(name)
@@ -203,7 +214,7 @@ def api_save_favorite():
         return jsonify({"error": "Unauthorized"}), 401
 
     # Save one favorite recipe document for this user.
-    save_favorite(user, request.get_json())
+    firestore_save_favorite(user, request.get_json())
     return jsonify({"message": "Saved!"}), 200
 
 
@@ -215,7 +226,7 @@ def api_get_favorites():
         return jsonify({"error": "Unauthorized"}), 401
 
     # Return all favorites owned by this user.
-    return jsonify(get_favorites(user)), 200
+    return jsonify(firestore_get_favorites(user)), 200
 
 
 @app.route("/api/favorites/<doc_id>", methods=["DELETE"])
@@ -226,7 +237,7 @@ def api_delete_favorite(doc_id):
         return jsonify({"error": "Unauthorized"}), 401
 
     # Delete one favorite by Firestore document id.
-    delete_favorite(doc_id)
+    firestore_delete_favorite(doc_id)
     return jsonify({"message": "Deleted"}), 200
 
 
@@ -239,7 +250,7 @@ def api_ingredient_suggestions():
         return jsonify({"error": "Unauthorized"}), 401
 
     # Load this user's saved favorite recipes.
-    favorites = get_favorites(user)
+    favorites = firestore_get_favorites(user)
 
     # Turn one favorite recipe into a small set of ingredient chips.
     data = generate_ingredient_suggestions(user, favorites)
