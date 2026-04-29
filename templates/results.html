@@ -113,7 +113,14 @@
                             btn.disabled = true;
                             btn.textContent = "✅ Saved";
                         } else {
-                            alert("Failed to save recipe. Please try again.");
+                            let message = "Failed to save recipe. Please try again.";
+                            try {
+                                const errorData = await response.json();
+                                message = errorData.error || errorData.details || message;
+                            } catch (_) {
+                                // Ignore JSON parsing errors and keep default message.
+                            }
+                            alert(message);
                         }
                     } catch (e) {
                         alert("Error saving recipe: " + e.message);

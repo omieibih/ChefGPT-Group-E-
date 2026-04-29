@@ -8,7 +8,7 @@ const card = document.getElementById("assistant-panel");
 const text = document.getElementById("assistant-message");
 const luckyBtn = document.getElementById("assistant-lucky");
 const chips = document.getElementById("assistant-chips");
-const input = document.getElementById("ingredients-input");
+const input = document.getElementById("ingredients-input") || document.getElementById("ingredients");
 
 let user = null;
 
@@ -27,6 +27,10 @@ function closeCard() {
 // Read the ingredient input as a normalized array so we can compare values
 // consistently and avoid duplicate entries.
 function currentList() {
+    if (!input) {
+        return [];
+    }
+
     return input.value
         .split(",")
         .map((item) => item.trim().toLowerCase())
@@ -35,6 +39,10 @@ function currentList() {
 
 // Add a suggested ingredient into the input field if it is not already there.
 function addItem(item) {
+    if (!input) {
+        return;
+    }
+
     const clean = item.trim();
 
     if (!clean) {

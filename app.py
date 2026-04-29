@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, jsonify
 import os
 import json
+from groq import Groq
 
 import firebase_admin
 from firebase_admin import credentials, auth as firebase_auth
@@ -9,11 +10,7 @@ try:
 except Exception:
     Groq = None
 
-from backend.favorites import (
-    save_favorite as firestore_save_favorite,
-    get_favorites as firestore_get_favorites,
-    delete_favorite as firestore_delete_favorite,
-)
+from backend.favorites import save_favorite, get_favorites, delete_favorite
 from backend.ingredient_suggestions import generate_ingredient_suggestions
 
 
@@ -36,9 +33,16 @@ def _load_firebase_credentials():
     )
 
 
-# Initialize Firebase Admin SDK once.
+# Initialize Firebase Admin SDK once, but do not crash local development if
+# credentials are not configured yet.
+FIREBASE_AVAILABLE = True
+FIREBASE_INIT_ERROR = None
 if not firebase_admin._apps:
-    firebase_admin.initialize_app(_load_firebase_credentials())
+    try:
+        firebase_admin.initialize_app(_load_firebase_credentials())
+    except Exception as e:
+        FIREBASE_AVAILABLE = False
+        FIREBASE_INIT_ERROR = str(e)
 
 app = Flask(__name__)
 
@@ -48,6 +52,9 @@ app = Flask(__name__)
 # -----------------------------------------------
 def get_current_user(request):
     """Verifies Firebase ID token from Authorization header."""
+    if not FIREBASE_AVAILABLE:
+        return None
+
     auth_header = request.headers.get("Authorization", "")
     if not auth_header.startswith("Bearer "):
         return None
@@ -63,8 +70,8 @@ def get_current_user(request):
 # AI-powered recipe generator (used by main app)
 # -----------------------------------------------
 def get_recipes(ingredients, budget):
-    if Groq is None:
-        raise RuntimeError("Groq SDK is not installed or failed to import.")
+
+    from groq import Groq
 
     # Security note: API keys must come from environment variables, not literals,
     # to avoid CWE-798 (Use of Hard-coded Credentials).
@@ -168,9 +175,6 @@ def save_recipe(name):
 def get_favorites_local():
     return _favorites
 
-def get_favorites():
-    return _favorites
-
 def remove_recipe(name):
     if name in _favorites:
         _favorites.remove(name)
@@ -208,6 +212,9 @@ def results():
 # Favorites API
 @app.route("/api/favorites", methods=["POST"])
 def api_save_favorite():
+    if not FIREBASE_AVAILABLE:
+        return jsonify({"error": "Firebase is not configured.", "details": FIREBASE_INIT_ERROR}), 503
+
     # Verify user identity from Firebase token in Authorization header.
     user = get_current_user(request)
     if not user:
@@ -220,24 +227,30 @@ def api_save_favorite():
 
 @app.route("/api/favorites", methods=["GET"])
 def api_get_favorites():
+    if not FIREBASE_AVAILABLE:
+        return jsonify({"error": "Firebase is not configured.", "details": FIREBASE_INIT_ERROR}), 503
+
     # Verify user identity.
     user = get_current_user(request)
     if not user:
         return jsonify({"error": "Unauthorized"}), 401
 
     # Return all favorites owned by this user.
-    return jsonify(firestore_get_favorites(user)), 200
+    return jsonify(get_favorites(user)), 200
 
 
 @app.route("/api/favorites/<doc_id>", methods=["DELETE"])
 def api_delete_favorite(doc_id):
+    if not FIREBASE_AVAILABLE:
+        return jsonify({"error": "Firebase is not configured.", "details": FIREBASE_INIT_ERROR}), 503
+
     # Verify user identity.
     user = get_current_user(request)
     if not user:
         return jsonify({"error": "Unauthorized"}), 401
 
     # Delete one favorite by Firestore document id.
-    firestore_delete_favorite(doc_id)
+    delete_favorite(doc_id)
     return jsonify({"message": "Deleted"}), 200
 
 
@@ -250,7 +263,7 @@ def api_ingredient_suggestions():
         return jsonify({"error": "Unauthorized"}), 401
 
     # Load this user's saved favorite recipes.
-    favorites = firestore_get_favorites(user)
+    favorites = get_favorites(user)
 
     # Turn one favorite recipe into a small set of ingredient chips.
     data = generate_ingredient_suggestions(user, favorites)
