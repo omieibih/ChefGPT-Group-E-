@@ -25,43 +25,16 @@ python --version
 If Python is not installed, download it from:
 https://www.python.org/downloads/
 
-### **Frontend**
-* **HTML**
-* **CSS**
+2. Install pytest and flask
 
-### **Backend**
-* **Python**
-* **Flask**
-
-### **AI**
-* **Groq API** (LLaMA 3.3 70B model)
+pip install flask pytest groq
 
 To execute all test cases, run:
 
 pytest -v <optionally, test file name goes here; ex: tests/test_IngredientSuggestion.py>
 
-1. The user enters available ingredients into the input field.
-2. The user optionally enters a budget for buying extra ingredients.
-3. The Groq AI processes the input and generates 3 meal suggestions.
-4. Each meal is displayed in a dropdown card with:
-   - Ingredients the user already has
-   - Additional ingredients to buy (with estimated prices)
-   - Step-by-step cooking instructions
 
-python run_tests.py
 
-```
-ChefGPT/
-│
-├── app.py
-├── requirements.txt
-├── templates/
-│   ├── index.html
-│   └── results.html
-├── static/
-│   └── style.css
-└── README.md
-```
 
 ---
 
@@ -83,7 +56,7 @@ If Python is not installed, download it from [python.org/downloads](https://pyth
 ### **2️ Clone the Repository**
 
 ```powershell
-git clone https://github.com/Jason520-apple/ChefGPT-Group-E-.git
+git clone https://github.com/omieibih/ChefGPT-Group-E-.git
 cd ChefGPT-Group-E-
 ```
 
@@ -137,6 +110,64 @@ $env:GROQ_API_KEY="your-groq-api-key-here"
 ```
 
 > ⚠️ Replace `your-groq-api-key-here` with your actual key. This must be run **every time you open a new PowerShell window** before starting the app.
+
+---
+
+### **5.1 Firebase Admin Credentials (Required for Login/Favorites)**
+
+ChefGPT uses Firebase Admin on the backend for token verification and favorites storage.
+
+Use one of these options:
+
+1. Preferred (no key file on disk):
+
+```powershell
+$env:FIREBASE_SERVICE_ACCOUNT_JSON='{"type":"service_account", ... }'
+```
+
+2. Local key file path:
+
+```powershell
+$env:FIREBASE_SERVICE_ACCOUNT_PATH="serviceAccountKey.json"
+```
+
+`serviceAccountKey.json` is ignored by git and should never be committed.
+
+---
+
+### **5.2 Firebase Setup After Cloning (Teammate Checklist)**
+
+Use this checklist so auth and favorites work on a fresh clone.
+
+1. Create your own Firebase project (or get access to the team project).
+2. In Firebase Authentication, enable:
+  - Email/Password
+  - Google (if you plan to use Google Sign-In)
+3. In Firestore Database, create the database.
+4. Open `static/firebase-config.js` and replace the `firebaseConfig` object with your own Web App config from:
+  - Firebase Console -> Project settings -> General -> Your apps -> Web app
+5. Create a service account key from:
+  - Firebase Console -> Project settings -> Service accounts -> Generate new private key
+6. Set one backend credential environment variable before running:
+
+```powershell
+$env:FIREBASE_SERVICE_ACCOUNT_PATH="C:/path/to/your/firebase-service-account.json"
+```
+
+or
+
+```powershell
+$json = Get-Content -Raw "C:/path/to/your/firebase-service-account.json"
+$env:FIREBASE_SERVICE_ACCOUNT_JSON = $json
+```
+
+7. For better security, restrict your Firebase Web API key in Google Cloud:
+  - Restrict by HTTP referrers
+  - Restrict to required APIs only
+8. Run the app and verify:
+  - `/login` allows sign-up/login
+  - creating favorites succeeds
+  - favorites appear in Firestore
 
 ---
 
@@ -201,6 +232,40 @@ The tests cover:
 * Proper error handling when the API fails
 
 ---
+
+
+### **Frontend**
+* **HTML**
+* **CSS**
+
+### **Backend**
+* **Python**
+* **Flask**
+
+### **AI**
+* **Groq API** (LLaMA 3.3 70B model)
+
+1. The user enters available ingredients into the input field.
+2. The user optionally enters a budget for buying extra ingredients.
+3. The Groq AI processes the input and generates 3 meal suggestions.
+4. Each meal is displayed in a dropdown card with:
+   - Ingredients the user already has
+   - Additional ingredients to buy (with estimated prices)
+   - Step-by-step cooking instructions
+
+
+```
+ChefGPT/
+│
+├── app.py
+├── requirements.txt
+├── templates/
+│   ├── index.html
+│   └── results.html
+├── static/
+│   └── style.css
+└── README.md
+```
 
 ##  **Contribution Guidelines**
 

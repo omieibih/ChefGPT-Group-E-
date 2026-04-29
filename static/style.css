@@ -140,3 +140,71 @@ button:hover {
     color: red;
     font-size: 14px;
 }
+
+.assistant-toggle {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    font-size: 24px;
+    z-index: 1000;
+}
+
+.assistant-panel {
+    position: fixed;
+    right: 18px;
+    bottom: 82px;
+    width: 260px;
+    padding: 12px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    display: none;
+    z-index: 1001;
+    text-align: left;
+}
+
+.assistant-panel.open {
+    display: block;
+}
+
+.assistant-message {
+    margin: 8px 0 10px;
+    font-size: 14px;
+}
+
+.assistant-lucky {
+    margin-top: 0;
+    margin-bottom: 10px;
+    padding: 8px 10px;
+    width: 100%;
+    font-size: 14px;
+}
+
+.assistant-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.assistant-chip {
+    border: none;
+    background: #ff914d;
+    color: white;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.assistant-chip:hover {
+    background: #e07a3a;
+}
+
+@media (max-width: 768px) {
+    .assistant-panel {
+        width: 220px;
+    }
+}

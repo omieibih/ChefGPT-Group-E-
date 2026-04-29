@@ -9,6 +9,13 @@
         <h1>👨‍🍳 ChefGPT</h1>
         <p>Enter your ingredients and we'll suggest meals tailored to you!</p>
 
+        <!-- User info bar -->
+        <div id="user-bar" style="text-align:right; margin-bottom: 10px;">
+            <a href="/favorites" style="color:#ff914d; font-weight:bold; margin-right:15px;">⭐ My Favorites</a>
+            <span id="user-email"></span>
+            <button id="logout-btn" style="margin-left: 10px;">Log Out</button>
+        </div>
+
         <form action="/results" method="POST">
             <label for="ingredients">🥦 What ingredients do you have?</label>
             <input type="text" id="ingredients" name="ingredients" placeholder="e.g. chicken, rice, broccoli" required>
@@ -19,5 +26,31 @@
             <button type="submit">Generate Recipes</button>
         </form>
     </div>
+
+    <!-- Simple floating assistant bubble and card. -->
+    <button id="assistant-toggle" class="assistant-toggle" aria-label="Open ingredient assistant">+</button>
+    <div id="assistant-panel" class="assistant-panel" aria-hidden="true">
+        <p id="assistant-message" class="assistant-message">Open for a quick suggestion.</p>
+        <button id="assistant-lucky" class="assistant-lucky" type="button">I'm Feeling Lucky</button>
+        <div id="assistant-chips" class="assistant-chips"></div>
+    </div>
+
+    <script type="module">
+        import { auth } from "/static/firebase-config.js";
+        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                window.location.href = "/login";
+            } else {
+                document.getElementById("user-email").textContent = user.email;
+            }
+        });
+
+        document.getElementById("logout-btn").addEventListener("click", () => {
+            signOut(auth).then(() => window.location.href = "/login");
+        });
+    </script>
+    <script type="module" src="/static/assistant.js?v=7"></script>
 </body>
 </html>
