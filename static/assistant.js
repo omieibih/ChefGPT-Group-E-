@@ -18,10 +18,29 @@ const luckyPool = ["garlic", "onion", "tomato", "rice", "eggs", "chicken", "past
 // Open and close the assistant panel.
 function openCard() {
     card.classList.add("open");
+    card.setAttribute("aria-hidden", "false");
 }
 
 function closeCard() {
     card.classList.remove("open");
+    card.setAttribute("aria-hidden", "true");
+}
+
+function setMessage(message) {
+    text.textContent = message;
+}
+
+function renderChips(items) {
+    chips.innerHTML = "";
+
+    for (const item of items) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "assistant-chip";
+        button.textContent = item;
+        button.addEventListener("click", () => addItem(item));
+        chips.appendChild(button);
+    }
 }
 
 // Read the ingredient input as a normalized array so we can compare values
@@ -54,6 +73,8 @@ function addItem(item) {
     }
 
     input.value = input.value.trim() === "" ? clean : input.value.trim() + ", " + clean;
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    setMessage("Added " + clean + ". Tap another chip or generate recipes.");
 }
 
 // Build a small random set of ingredients and render them as clickable chips.
@@ -67,17 +88,8 @@ function randomIngredients() {
         }
     }
 
-    text.textContent = "I'm feeling lucky, try these random ingredients:";
-    chips.innerHTML = "";
-
-    for (const item of picks) {
-        const button = document.createElement("button");
-        button.type = "button";
-        button.className = "assistant-chip";
-        button.textContent = item;
-        button.addEventListener("click", () => addItem(item));
-        chips.appendChild(button);
-    }
+    setMessage("I'm feeling lucky, try these random ingredients:");
+    renderChips(picks);
 }
 
 // Render API results from the backend into the assistant panel.
@@ -86,29 +98,23 @@ function render(data) {
     const items = Array.isArray(data.suggested_ingredients) ? data.suggested_ingredients : [];
 
     if (data.no_favorites) {
-        text.textContent = "Save a favorite recipe first, then I can suggest ingredients.";
+        setMessage("Save a favorite recipe first, then I can suggest ingredients.");
     } else {
-        text.textContent = "Since you liked " + title + ", try adding these:";
+        setMessage("Since you liked " + title + ", try adding these:");
     }
-    chips.innerHTML = "";
-
-    for (const item of items) {
-        const button = document.createElement("button");
-        button.type = "button";
-        button.className = "assistant-chip";
-        button.textContent = item;
-        button.addEventListener("click", () => addItem(item));
-        chips.appendChild(button);
-    }
+    renderChips(items);
 }
 
 // Fetch ingredient suggestions for the signed-in user.
 async function loadData() {
     if (!user) {
-        text.textContent = "Please log in first.";
+        setMessage("Please log in first.");
         chips.innerHTML = "";
         return;
     }
+
+    setMessage("Thinking about your favorites...");
+    chips.innerHTML = "";
 
     const token = await user.getIdToken();
     const response = await fetch("/api/ingredient-suggestions", {
@@ -116,7 +122,7 @@ async function loadData() {
     });
 
     if (!response.ok) {
-        text.textContent = "Could not load suggestions.";
+        setMessage("Could not load suggestions.");
         chips.innerHTML = "";
         return;
     }
@@ -144,4 +150,16 @@ bubble.addEventListener("click", async () => {
 luckyBtn.addEventListener("click", () => {
     openCard();
     randomIngredients();
+});
+
+document.addEventListener("click", (event) => {
+    if (!card.classList.contains("open")) {
+        return;
+    }
+
+    if (card.contains(event.target) || bubble.contains(event.target)) {
+        return;
+    }
+
+    closeCard();
 });
