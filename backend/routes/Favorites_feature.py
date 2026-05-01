@@ -69,5 +69,5 @@ def api_delete_favorite(doc_id):
     if err:
         return err
 
-    delete_favorite(doc_id)
+    delete_favorite(user, doc_id)
     return jsonify({"message": "Deleted"}), 200
