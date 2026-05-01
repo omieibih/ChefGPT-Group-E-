@@ -16,12 +16,28 @@ from groq import Groq
 
 recipes_bp = Blueprint("recipes", __name__)
 
+#---------------------------------------------------------------------------
+# Adds experience level route
+#---------------------------------------------------------------------------
+
+@recipes_bp.route("/ingredients", methods=["POST"])
+def ingredients():
+    """Receives experience level and shows the ingredients page."""
+
+    experience_level = request.form.get("experience_level", "Beginner")
+
+    return render_template(
+        "ingredients.html",
+        experience_level=experience_level
+    )
+
+
 
 # ---------------------------------------------------------------------------
 # Core AI function
 # ---------------------------------------------------------------------------
 
-def get_recipes(ingredients: str, budget: str) -> list[dict]:
+def get_recipes(ingredients: str, budget: str, experience_level: str = "Beginner") -> list[dict]:
     """
     Calls the Groq/Llama API and returns a list of three meal dicts.
 
@@ -52,6 +68,9 @@ def get_recipes(ingredients: str, budget: str) -> list[dict]:
 
     prompt = f"""You are a helpful chef assistant. The user has these ingredients on hand: {ingredients}.
 {budget_text}
+
+The user's cooking experience level is: {experience_level}.
+Adjust the recipe difficulty accordingly.
 
 Suggest exactly 3 different meals where the provided ingredients are the heart/star of the dish.
 For each meal, suggest any additional ingredients they may need to buy to complete the recipe, keeping the budget in mind if one was provided.
@@ -90,8 +109,10 @@ def results():
     ingredients = request.form.get("ingredients", "")
     budget = request.form.get("budget", "").strip()
 
+    # Adds Experience Level Feature 
+    experience_level = request.form.get("experience_level", "Beginner")
     try:
-        meals = get_recipes(ingredients, budget)
+        meals = get_recipes(ingredients, budget, experience_level)
         error = None
     except Exception as exc:
         meals = []
@@ -102,5 +123,6 @@ def results():
         meals=meals,
         ingredients=ingredients,
         budget=budget,
+        experience_level=experience_level,
         error=error,
     )
