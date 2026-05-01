@@ -9,9 +9,9 @@ Usage in app.py
         app.register_blueprint(bp)
 """
 
-from backend.routes.favorites import favorites_bp
-from backend.routes.ingredients import ingredients_bp
+from backend.routes.Favorites_feature import favorites_bp
+from backend.routes.Ingredient_Suggestion import ingredients_bp
 from backend.routes.pages import pages_bp
-from backend.routes.recipes import recipes_bp
+from backend.routes.AI_Recipe_Generation import recipes_bp
 
 all_blueprints = [pages_bp, recipes_bp, favorites_bp, ingredients_bp]
