@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Favorites - ChefGPT</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .favorites-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .no-favorites {
+            color: #777;
+            font-style: italic;
+            margin-top: 30px;
+        }
+        .delete-btn {
+            background: #e05555;
+            font-size: 13px;
+            padding: 6px 12px;
+            margin-top: 10px;
+        }
+        .delete-btn:hover {
+            background: #c04040;
+        }
+        .loading {
+            color: #777;
+            font-style: italic;
+        }
+        .user-bar {
+            text-align: right;
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #444;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="user-bar">
+            <span id="user-email"></span>
+            <button id="logout-btn" style="font-size:13px; padding: 6px 12px; margin-left: 10px;">Log Out</button>
+        </div>
+
+        <h1>⭐ My Favorite Recipes</h1>
+
+        <div id="favorites-list">
+            <p class="loading">Loading your favorites...</p>
+        </div>
+
+        <a href="/" class="back-link">⬅ Back to ChefGPT</a>
+    </div>
+
+    <script type="module">
+        import { auth } from "/static/firebase-config.js";
+        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+        const listDiv = document.getElementById("favorites-list");
+
+        function escapeHtml(value) {
+            return String(value)
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll('"', "&quot;")
+                .replaceAll("'", "&#39;");
+        }
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = "/login";
+                return;
+            }
+
+            // Show user email
+            document.getElementById("user-email").textContent = user.email;
+
+            // Logout button
+            document.getElementById("logout-btn").addEventListener("click", () => {
+                signOut(auth).then(() => window.location.href = "/login");
+            });
+
+            // Load favorites from backend
+            try {
+                const token = await user.getIdToken();
+                const response = await fetch("/api/favorites", {
+                    headers: { "Authorization": "Bearer " + token }
+                });
+
+                if (!response.ok) {
+                    let message = "Failed to load favorites.";
+                    try {
+                        const errorData = await response.json();
+                        message = errorData.error || errorData.details || message;
+                    } catch (_) {
+                        // Ignore JSON parsing errors and show default message.
+                    }
+                    listDiv.innerHTML = `<p class="error">${escapeHtml(message)}</p>`;
+                    return;
+                }
+
+                const favorites = await response.json();
+
+                if (favorites.length === 0) {
+                    listDiv.innerHTML = `<p class="no-favorites">You haven't saved any recipes yet!<br>
+                        <a href="/" class="back-link">Generate some recipes</a> and save your favorites.</p>`;
+                    return;
+                }
+
+                // Render each favorite as a meal card
+                listDiv.innerHTML = favorites.map(fav => `
+                    <details class="meal-card" id="fav-${fav.id}">
+                        <summary>
+                            <span class="meal-name">${escapeHtml(fav.name || "Untitled recipe")}</span>
+                            <span class="meal-desc">${escapeHtml(fav.ingredients || "")}</span>
+                            <span class="dropdown-icon">▼</span>
+                        </summary>
+                        <div class="meal-body">
+                            <div class="section">
+                                <h3>🧺 Ingredients</h3>
+                                <ul>
+                                    ${(fav.ingredients || "").split(", ").filter(Boolean).map(i => `<li>${escapeHtml(i)}</li>`).join("")}
+                                </ul>
+                            </div>
+                            <div class="section">
+                                <h3>📋 Instructions</h3>
+                                <ol>
+                                    ${(fav.instructions || "").split(" | ").filter(Boolean).map(s => `<li>${escapeHtml(s)}</li>`).join("")}
+                                </ol>
+                            </div>
+                            <button class="delete-btn" data-id="${fav.id}">🗑 Remove from Favorites</button>
+                        </div>
+                    </details>
+                `).join("");
+
+                // Wire up delete buttons
+                document.querySelectorAll(".delete-btn").forEach(btn => {
+                    btn.addEventListener("click", async () => {
+                        const docId = btn.dataset.id;
+                        const token = await user.getIdToken();
+
+                        const res = await fetch(`/api/favorites/${docId}`, {
+                            method: "DELETE",
+                            headers: { "Authorization": "Bearer " + token }
+                        });
+
+                        if (res.ok) {
+                            document.getElementById(`fav-${docId}`).remove();
+                            if (document.querySelectorAll(".meal-card").length === 0) {
+                                listDiv.innerHTML = `<p class="no-favorites">No favorites left! 
+                                    <a href="/" class="back-link">Generate some recipes</a>.</p>`;
+                            }
+                        } else {
+                            let message = "Failed to delete. Please try again.";
+                            try {
+                                const errorData = await res.json();
+                                message = errorData.error || errorData.details || message;
+                            } catch (_) {
+                                // Ignore JSON parsing errors and keep the default message.
+                            }
+                            alert(message);
+                        }
+                    });
+                });
+
+            } catch (e) {
+                listDiv.innerHTML = `<p class="error">Failed to load favorites: ${e.message}</p>`;
+            }
+        });
+    </script>
+</body>
+</html>
