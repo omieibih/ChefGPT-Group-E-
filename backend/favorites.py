@@ -17,6 +17,17 @@ def get_favorites(user):
     docs = db_firestore.collection("favorites").where("uid", "==", user["uid"]).stream()
     return [{"id": d.id, **d.to_dict()} for d in docs]
 
-def delete_favorite(doc_id):
+def delete_favorite(user, doc_id):
     db_firestore = firestore.client()
-    db_firestore.collection("favorites").document(doc_id).delete()
+    doc_ref = db_firestore.collection("favorites").document(doc_id)
+    doc = doc_ref.get()
+
+    if not doc.exists:
+        return False
+
+    data = doc.to_dict() or {}
+    if data.get("uid") != user["uid"]:
+        return False
+
+    doc_ref.delete()
+    return True

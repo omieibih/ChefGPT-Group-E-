@@ -113,6 +113,64 @@ $env:GROQ_API_KEY="your-groq-api-key-here"
 
 ---
 
+### **5.1 Firebase Admin Credentials (Required for Login/Favorites)**
+
+ChefGPT uses Firebase Admin on the backend for token verification and favorites storage.
+
+Use one of these options:
+
+1. Preferred (no key file on disk):
+
+```powershell
+$env:FIREBASE_SERVICE_ACCOUNT_JSON='{"type":"service_account", ... }'
+```
+
+2. Local key file path:
+
+```powershell
+$env:FIREBASE_SERVICE_ACCOUNT_PATH="serviceAccountKey.json"
+```
+
+`serviceAccountKey.json` is ignored by git and should never be committed.
+
+---
+
+### **5.2 Firebase Setup After Cloning (Teammate Checklist)**
+
+Use this checklist so auth and favorites work on a fresh clone.
+
+1. Create your own Firebase project (or get access to the team project).
+2. In Firebase Authentication, enable:
+  - Email/Password
+  - Google (if you plan to use Google Sign-In)
+3. In Firestore Database, create the database.
+4. Open `static/firebase-config.js` and replace the `firebaseConfig` object with your own Web App config from:
+  - Firebase Console -> Project settings -> General -> Your apps -> Web app
+5. Create a service account key from:
+  - Firebase Console -> Project settings -> Service accounts -> Generate new private key
+6. Set one backend credential environment variable before running:
+
+```powershell
+$env:FIREBASE_SERVICE_ACCOUNT_PATH="C:/path/to/your/firebase-service-account.json"
+```
+
+or
+
+```powershell
+$json = Get-Content -Raw "C:/path/to/your/firebase-service-account.json"
+$env:FIREBASE_SERVICE_ACCOUNT_JSON = $json
+```
+
+7. For better security, restrict your Firebase Web API key in Google Cloud:
+  - Restrict by HTTP referrers
+  - Restrict to required APIs only
+8. Run the app and verify:
+  - `/login` allows sign-up/login
+  - creating favorites succeeds
+  - favorites appear in Firestore
+
+---
+
 ### **6️ Run the Application**
 
 ```powershell
