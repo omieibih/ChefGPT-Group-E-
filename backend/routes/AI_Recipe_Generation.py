@@ -21,7 +21,11 @@ recipes_bp = Blueprint("recipes", __name__)
 # Core AI function
 # ---------------------------------------------------------------------------
 
-def get_recipes(ingredients: str, budget: str) -> list[dict]:
+def get_recipes(
+    ingredients: str, 
+    budget: str, 
+    experience_level: str = "Beginner",
+) -> list[dict]:
     """
     Calls the Groq/Llama API and returns a list of three meal dicts.
 
@@ -50,8 +54,17 @@ def get_recipes(ingredients: str, budget: str) -> list[dict]:
             "The user has no specific budget — suggest affordable additions."
         )
 
+    experience_text = (
+        f"The user's cooking experience level is {experience_level}. "
+        "Adjust the recipe instructions based on this level. "
+        "For Beginner, use simple language, fewer steps, common tools, and avoid advanced techniques. "
+        "For Intermediate, include moderate detail and basic cooking techniques. "
+        "For Advanced, allow more complex techniques, timing details, and flavor-building steps."
+    )
+
     prompt = f"""You are a helpful chef assistant. The user has these ingredients on hand: {ingredients}.
 {budget_text}
+{experience_text}
 
 Suggest exactly 3 different meals where the provided ingredients are the heart/star of the dish.
 For each meal, suggest any additional ingredients they may need to buy to complete the recipe, keeping the budget in mind if one was provided.
@@ -89,9 +102,10 @@ def results():
     """Accepts the ingredient form and renders AI-generated meal suggestions."""
     ingredients = request.form.get("ingredients", "")
     budget = request.form.get("budget", "").strip()
+    experience_level = request.form.get("experience_level", "Beginner")
 
     try:
-        meals = get_recipes(ingredients, budget)
+        meals = get_recipes(ingredients, budget, experience_level)
         error = None
     except Exception as exc:
         meals = []
@@ -102,5 +116,6 @@ def results():
         meals=meals,
         ingredients=ingredients,
         budget=budget,
+        experience_level=experience_level,
         error=error,
     )
