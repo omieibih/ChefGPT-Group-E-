@@ -1,16 +1,19 @@
 body {
     font-family: Arial, sans-serif;
-    background: #933c3ce7;  
+    background: #eef4fb;
     text-align: center;
     padding: 40px;
+    color: #16324f;
 }
 
 .container {
-    background: rgb(2, 233, 102);
+    background: #ffffff;
     padding: 30px;
     border-radius: 10px;
     width: 500px;
     margin: auto;
+    border: 1px solid #d4e3f5;
+    box-shadow: 0 10px 24px rgba(19, 61, 107, 0.1);
 }
 
 label {
@@ -32,7 +35,7 @@ input {
 button {
     margin-top: 15px;
     padding: 10px 20px;
-    background: #ff914d;
+    background: #1f6fb2;
     border: none;
     color: white;
     cursor: pointer;
@@ -41,13 +44,13 @@ button {
 }
 
 button:hover {
-    background: #e07a3a;
+    background: #195f98;
 }
 
 .budget-tag {
     display: inline-block;
-    background: #fff3e0;
-    color: #e07a3a;
+    background: #e7f1fc;
+    color: #1a5c98;
     border-radius: 20px;
     padding: 4px 14px;
     font-size: 14px;
@@ -55,8 +58,8 @@ button:hover {
 }
 
 .meal-card {
-    background: #fff8f4;
-    border: 1px solid #ffd5b5;
+    background: #f7fbff;
+    border: 1px solid #d6e6f7;
     border-radius: 10px;
     margin: 15px 0;
     text-align: left;
@@ -79,7 +82,7 @@ button:hover {
 .meal-name {
     font-size: 18px;
     font-weight: bold;
-    color: #ff914d;
+    color: #1f6fb2;
     padding-right: 24px;
 }
 
@@ -94,7 +97,7 @@ button:hover {
     right: 16px;
     top: 16px;
     font-size: 12px;
-    color: #ff914d;
+    color: #1f6fb2;
     transition: transform 0.2s;
 }
 
@@ -104,7 +107,7 @@ button:hover {
 
 .meal-body {
     padding: 0 20px 20px;
-    border-top: 1px solid #ffd5b5;
+    border-top: 1px solid #d6e6f7;
 }
 
 .section {
@@ -127,7 +130,7 @@ button:hover {
 .back-link {
     display: inline-block;
     margin-top: 25px;
-    color: #ff914d;
+    color: #1f6fb2;
     text-decoration: none;
     font-weight: bold;
 }
@@ -137,7 +140,7 @@ button:hover {
 }
 
 .error {
-    color: red;
+    color: #b42318;
     font-size: 14px;
 }
 
@@ -148,8 +151,21 @@ button:hover {
     width: 54px;
     height: 54px;
     border-radius: 50%;
-    font-size: 24px;
+    font-size: 26px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    margin-top: 0;
+    background: #1f6fb2;
+    border: 1px solid #1a5c98;
+    box-shadow: 0 8px 18px rgba(19, 61, 107, 0.28);
     z-index: 1000;
+}
+
+.assistant-toggle:hover {
+    background: #195f98;
 }
 
 .assistant-panel {
@@ -159,11 +175,12 @@ button:hover {
     width: 260px;
     padding: 12px;
     background: #fff;
-    border: 1px solid #ddd;
+    border: 1px solid #cddff3;
     border-radius: 12px;
     display: none;
     z-index: 1001;
     text-align: left;
+    box-shadow: 0 10px 24px rgba(19, 61, 107, 0.14);
 }
 
 .assistant-panel.open {
@@ -173,6 +190,7 @@ button:hover {
 .assistant-message {
     margin: 8px 0 10px;
     font-size: 14px;
+    color: #1b4166;
 }
 
 .assistant-lucky {
@@ -191,7 +209,7 @@ button:hover {
 
 .assistant-chip {
     border: none;
-    background: #ff914d;
+    background: #1f6fb2;
     color: white;
     padding: 6px 10px;
     border-radius: 999px;
@@ -200,7 +218,7 @@ button:hover {
 }
 
 .assistant-chip:hover {
-    background: #e07a3a;
+    background: #195f98;
 }
 
 @media (max-width: 768px) {
