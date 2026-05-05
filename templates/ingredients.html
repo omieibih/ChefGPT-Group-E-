@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ChefGPT Ingredients</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>👨‍🍳 ChefGPT</h1>
+        <p>Now enter your ingredients. Your selected level is: <strong>{{ experience_level }}</strong></p>
+
+        <!-- User info bar -->
+        <div id="user-bar" style="text-align:right; margin-bottom: 10px;">
+            <a href="/favorites" style="color:#ff914d; font-weight:bold; margin-right:15px;">⭐ My Favorites</a>
+            <span id="user-email"></span>
+            <button id="logout-btn" style="margin-left: 10px;">Log Out</button>
+        </div>
+
+        <form action="/results" method="POST">
+            <input type="hidden" name="experience_level" value="{{ experience_level }}">
+
+            <label for="ingredients">🥦 What ingredients do you have?</label>
+            <input type="text" id="ingredients" name="ingredients" placeholder="e.g. chicken, rice, broccoli" required>
+
+            <label for="budget">💰 What's your budget for extra ingredients? (optional)</label>
+            <input type="number" id="budget" name="budget" placeholder="e.g. 20" min="0" step="0.01">
+
+            <button type="submit">Generate Recipes</button>
+        </form>
+    </div>
+
+    <!-- Simple floating assistant bubble and card. -->
+    <button id="assistant-toggle" class="assistant-toggle" aria-label="Open ingredient assistant">+</button>
+    <div id="assistant-panel" class="assistant-panel" aria-hidden="true">
+        <p id="assistant-message" class="assistant-message">Open for a quick suggestion.</p>
+        <button id="assistant-lucky" class="assistant-lucky" type="button">I'm Feeling Lucky</button>
+        <div id="assistant-chips" class="assistant-chips"></div>
+    </div>
+
+    <script type="module">
+        import { auth } from "/static/firebase-config.js";
+        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                window.location.href = "/login";
+            } else {
+                document.getElementById("user-email").textContent = user.email;
+            }
+        });
+
+        document.getElementById("logout-btn").addEventListener("click", () => {
+            signOut(auth).then(() => window.location.href = "/login");
+        });
+    </script>
+    <script type="module" src="/static/assistant.js?v=8"></script>
+</body>
+</html>
