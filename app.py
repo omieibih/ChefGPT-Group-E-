@@ -160,6 +160,8 @@ def remove_recipe(name):
     if name in _favorites:
         _favorites.remove(name)
 
+from backend.routes.nutrition_route import nutrition_bp
+app.register_blueprint(nutrition_bp)
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))

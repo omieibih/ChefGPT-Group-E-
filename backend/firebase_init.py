@@ -14,7 +14,8 @@ import firebase_admin
 from firebase_admin import credentials
 
 FIREBASE_AVAILABLE: bool = True
-FIREBASE_INIT_ERROR: str | None = None
+from typing import Optional
+FIREBASE_INIT_ERROR: Optional[str] = None
 
 
 def _load_firebase_credentials() -> credentials.Certificate:
