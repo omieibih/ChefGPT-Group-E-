@@ -6,3 +6,5 @@ __pycache__/
 serviceAccountKey.json
 *serviceAccount*.json
 firebase-adminsdk*.json
+.venv/
+.venv310/
