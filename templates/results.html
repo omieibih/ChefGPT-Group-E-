@@ -69,8 +69,13 @@
             <p>No recipes found. Please try again.</p>
         {% endif %}
 
-        <a href="/" class="back-link">⬅ Try again</a>
-    </div>
+        <form action="/ingredients" method="POST" style="margin-top: 25px;">
+            <input type="hidden" name="experience_level" value="{{ experience_level | default('Beginner') }}">
+            <button type="submit" class="back-link" style="background: none; border: none; padding: 0; font: inherit; cursor: pointer;">
+                ⬅ Try again
+            </button>
+        </form>    
+</div>
 
     <script type="module">
         import { auth } from "/static/firebase-config.js";
