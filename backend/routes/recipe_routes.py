@@ -103,11 +103,17 @@ def results():
     ingredients = request.form.get("ingredients", "")
     budget = request.form.get("budget", "").strip()
     experience_level = request.form.get("experience_level", "Beginner")
+    dietary_filter = request.form.get("dietary_filter", "").strip()
 
     try:
         import app as app_module
 
-        meals = app_module.get_recipes(ingredients, budget, experience_level)
+        meals = app_module.get_recipes(
+            ingredients,
+            budget,
+            experience_level,
+            dietary_filter,
+        )
         error = None
     except Exception as exc:
         meals = []
@@ -119,5 +125,6 @@ def results():
         ingredients=ingredients,
         budget=budget,
         experience_level=experience_level,
+        dietary_filter=dietary_filter,
         error=error,
     )

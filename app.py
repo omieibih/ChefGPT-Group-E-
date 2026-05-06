@@ -34,7 +34,7 @@ for blueprint in all_blueprints:
     app.register_blueprint(blueprint)
 
 
-def get_recipes(ingredients, budget, experience_level="Beginner"):
+def get_recipes(ingredients, budget, experience_level="Beginner", dietary_filter=""):
     """Compatibility helper used by existing unit tests."""
     client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
@@ -55,9 +55,17 @@ def get_recipes(ingredients, budget, experience_level="Beginner"):
         "For Advanced, allow more complex techniques, timing details, and flavor-building steps."
     )
 
+    dietary_text = ""
+    if dietary_filter:
+        dietary_text = (
+            f"The user wants recipes that are {dietary_filter.strip().lower()}. "
+            "Make sure the meals respect that dietary restriction or preference."
+        )
+
     prompt = f"""You are a helpful chef assistant. The user has these ingredients on hand: {ingredients}.
 {budget_text}
 {experience_text}
+{dietary_text}
 
 Suggest exactly 3 different meals where the provided ingredients are the heart/star of the dish.
 For each meal, suggest any additional ingredients they may need to buy to complete the recipe, keeping the budget in mind if one was provided.
@@ -150,11 +158,6 @@ def save_recipe(name):
 
 def get_favorites_local():
     return _favorites
-
-
-def get_favorites():
-    """Compatibility alias used by some test modules."""
-    return get_favorites_local()
 
 def remove_recipe(name):
     if name in _favorites:
