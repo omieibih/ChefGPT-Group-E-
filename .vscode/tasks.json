@@ -9,7 +9,6 @@
 				"-m",
 				"pytest",
 				"-q",
-				"tests/test_ingredient_suggestions_enhanced.py",
 				"tests/test_IngredientSuggestion.py"
 			],
 			"isBackground": false,

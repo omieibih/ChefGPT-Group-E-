@@ -55,22 +55,9 @@ jobs:
         run: |
           python -m py_compile app.py
 
-      - name: Smoke test Flask routes
-        shell: bash
+      - name: Run pytest tests
         run: |
-          # Start Flask in background
-          python app.py &
-          APP_PID=$!
-          sleep 2
-
-          # Home page should return 200
-          curl -f http://127.0.0.1:5000/ > /dev/null
-
-          # Results should return 200 with POST
-          curl -f -X POST -d "ingredients=chicken,rice" http://127.0.0.1:5000/results > /dev/null
-
-          # Stop server
-          kill $APP_PID
+          python -m pytest tests/ -v
 
       - name: Build static Pages artifact from templates
         shell: bash

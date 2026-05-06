@@ -8,7 +8,7 @@ import pytest
 # Add the parent folder of app.py to Python path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from app import save_recipe, get_favorites, remove_recipe, _favorites
+from app import save_recipe, get_favorites_local, remove_recipe, _favorites
 
 # Clear favorites before each test to prevent leftover data from affecting results
 @pytest.fixture(autouse=True)
@@ -24,14 +24,14 @@ def test_save_valid_recipe():
 # Test 2: Saved recipe appears in favorites list
 def test_saved_recipe_appears_in_favorites():
     save_recipe("Chicken Adobo")
-    favorites = get_favorites()
+    favorites = get_favorites_local()
     assert "Chicken Adobo" in favorites
 
 # Test 3: Save multiple recipes
 def test_save_multiple_recipes():
     save_recipe("Caesar Salad")
     save_recipe("Beef Stew")
-    favorites = get_favorites()
+    favorites = get_favorites_local()
     assert "Caesar Salad" in favorites
     assert "Beef Stew" in favorites
 
@@ -44,12 +44,12 @@ def test_empty_recipe_name():
 def test_duplicate_recipe():
     save_recipe("Pancakes")
     save_recipe("Pancakes")
-    favorites = get_favorites()
+    favorites = get_favorites_local()
     assert favorites.count("Pancakes") == 1
 
 # Test 6: Remove a recipe from favorites
 def test_remove_recipe_from_favorites():
     save_recipe("Greek Salad")
     remove_recipe("Greek Salad")
-    favorites = get_favorites()
+    favorites = get_favorites_local()
     assert "Greek Salad" not in favorites
