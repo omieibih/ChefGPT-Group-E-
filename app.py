@@ -12,10 +12,12 @@ Responsibilities
 All business logic lives in backend/routes/*.py and backend/*.py.
 """
 
+import json
 import os
 
 from dotenv import load_dotenv
 from flask import Flask
+from groq import Groq
 
 # Load .env before any other import that reads env vars.
 load_dotenv()
@@ -30,6 +32,66 @@ app = Flask(__name__)
 
 for blueprint in all_blueprints:
     app.register_blueprint(blueprint)
+
+
+def get_recipes(ingredients, budget, experience_level="Beginner", dietary_filter=""):
+    """Compatibility helper used by existing unit tests."""
+    client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+
+    if budget:
+        budget_text = (
+            f"The user has a budget of ${budget} to spend on additional ingredients."
+        )
+    else:
+        budget_text = (
+            "The user has no specific budget — suggest affordable additions."
+        )
+
+    experience_text = (
+        f"The user's cooking experience level is {experience_level}. "
+        "Adjust the recipe instructions based on this level. "
+        "For Beginner, use simple language, fewer steps, common tools, and avoid advanced techniques. "
+        "For Intermediate, include moderate detail and basic cooking techniques. "
+        "For Advanced, allow more complex techniques, timing details, and flavor-building steps."
+    )
+
+    dietary_text = ""
+    if dietary_filter:
+        dietary_text = (
+            f"The user wants recipes that are {dietary_filter.strip().lower()}. "
+            "Make sure the meals respect that dietary restriction or preference."
+        )
+
+    prompt = f"""You are a helpful chef assistant. The user has these ingredients on hand: {ingredients}.
+{budget_text}
+{experience_text}
+{dietary_text}
+
+Suggest exactly 3 different meals where the provided ingredients are the heart/star of the dish.
+For each meal, suggest any additional ingredients they may need to buy to complete the recipe, keeping the budget in mind if one was provided.
+
+Respond ONLY with a raw JSON array — no markdown, no code fences, no explanation. Use this exact structure:
+[
+  {{
+    "name": "Meal Name",
+    "description": "A one-sentence description of the dish.",
+    "core_ingredients": ["ingredient1", "ingredient2"],
+    "additional_ingredients": ["extra ingredient (~$price)", "extra ingredient (~$price)"],
+    "instructions": [
+      "Step 1: ...",
+      "Step 2: ...",
+      "Step 3: ..."
+    ]
+  }}
+]"""
+
+    response = client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        messages=[{"role": "user", "content": prompt}],
+        max_tokens=1500,
+    )
+
+    return json.loads(response.choices[0].message.content.strip())
 
 
 # -----------------------------------------------
@@ -101,6 +163,8 @@ def remove_recipe(name):
     if name in _favorites:
         _favorites.remove(name)
 
+from backend.routes.nutrition_route import nutrition_bp
+app.register_blueprint(nutrition_bp)
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
