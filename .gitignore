@@ -8,3 +8,5 @@ serviceAccountKey.json
 firebase-adminsdk*.json
 .venv/
 .venv310/
+.env
+env*
