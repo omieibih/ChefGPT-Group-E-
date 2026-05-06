@@ -25,6 +25,7 @@ def get_recipes(
     ingredients: str, 
     budget: str, 
     experience_level: str = "Beginner",
+    dietary_filter: str = "",
 ) -> list[dict]:
     """
     Calls the Groq/Llama API and returns a list of three meal dicts.
@@ -66,6 +67,11 @@ def get_recipes(
 {budget_text}
 {experience_text}
 
+Dietary restriction: {dietary_filter if dietary_filter else "none"}.
+
+If a dietary restriction is provided, ONLY generate recipes that follow it.
+Do NOT include ingredients that violate the dietary restriction.
+
 Suggest exactly 3 different meals where the provided ingredients are the heart/star of the dish.
 For each meal, suggest any additional ingredients they may need to buy to complete the recipe, keeping the budget in mind if one was provided.
 
@@ -103,9 +109,10 @@ def results():
     ingredients = request.form.get("ingredients", "")
     budget = request.form.get("budget", "").strip()
     experience_level = request.form.get("experience_level", "Beginner")
+    dietary_filter = request.form.get("dietary_filter", "").strip()
 
     try:
-        meals = get_recipes(ingredients, budget, experience_level)
+        meals = get_recipes(ingredients, budget, experience_level, dietary_filter)
         error = None
     except Exception as exc:
         meals = []
