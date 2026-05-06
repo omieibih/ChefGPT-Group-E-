@@ -105,7 +105,9 @@ def results():
     experience_level = request.form.get("experience_level", "Beginner")
 
     try:
-        meals = get_recipes(ingredients, budget, experience_level)
+        import app as app_module
+
+        meals = app_module.get_recipes(ingredients, budget, experience_level)
         error = None
     except Exception as exc:
         meals = []
