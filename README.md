@@ -354,6 +354,147 @@ ChefGPT/
 ├── firebase-config.js
 └── README.md
 ```
+
+
+---
+
+##  **Installation & Setup**
+
+### **1️ Clone the Repository**
+
+```bash
+git clone https://github.com/Jason520-apple/ChefGPT-Group-E-.git
+cd chefgpt
+```
+
+---
+
+### **2️ Install Firebase CLI (If Needed)**
+
+```bash
+npm install -g firebase-tools
+```
+
+---
+## Installation Dependencies
+
+1. Clone the Repository
+...
+
+ 2. Install Dependencies
+    
+pip install -r requirements.txt
+
+ 4. Run the Application
+...
+
+ 5. Running Unit Tests
+...
+## **3️ Configure Firebase**
+
+1. Go to the Firebase Console.
+
+2. Create a new project.
+
+3. Enable:
+
+   * Authentication (optional)
+   * Firestore Database
+   * Hosting
+
+4. Create a file named `firebase-config.js` and add:
+
+```javascript
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT_ID.appspot.com",
+  messagingSenderId: "XXXX",
+  appId: "XXXX"
+};
+
+firebase.initializeApp(firebaseConfig);
+```
+
+---
+## Running Unit Tests
+
+1. Make sure you are in the project directory
+
+2. (Optional) Activate virtual environment
+   source venv/bin/activate
+
+3. Run the unit tests:
+   python3 -m unittest backend/test_dietary_filters.py
+### **4️ Run the Application**
+
+**Option 1:**
+Open `index.html` directly in your browser.
+
+**Option 2 (Firebase Hosting):**
+
+```bash
+firebase login
+firebase init
+firebase serve
+```
+
+---
+
+##  **Screenshots**
+
+### **Home Page**
+
+```
+(Add screenshot here: screenshots/home.png)
+```
+
+### **Generated Recipe Example**
+
+```
+(Add screenshot here: screenshots/recipe.png)
+```
+
+*(Replace placeholders with actual images from your project.)*
+
+---
+
+##  **Usage Guidelines**
+
+* Enter ingredients separated by commas
+
+  * Example: `chicken, rice, garlic`
+* Click the **Generate Recipe** button.
+* Review the generated recipe.
+* Save the recipe (if logged in).
+
+---
+
+##  **Contribution Guidelines**
+
+1. Fork the repository.
+2. Create a new branch:
+
+```bash
+git checkout -b feature-name
+```
+
+3. Commit your changes:
+
+```bash
+git commit -m "Add feature description"
+```
+
+4. Push to your branch:
+
+```bash
+git push origin feature-name
+```
+
+5. Submit a Pull Request.
+
+
 ---
 
 ##  **Future Improvements**
