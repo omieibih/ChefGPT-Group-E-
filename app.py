@@ -151,6 +151,11 @@ def save_recipe(name):
 def get_favorites_local():
     return _favorites
 
+
+def get_favorites():
+    """Compatibility alias used by some test modules."""
+    return get_favorites_local()
+
 def remove_recipe(name):
     if name in _favorites:
         _favorites.remove(name)
