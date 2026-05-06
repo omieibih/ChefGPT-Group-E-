@@ -133,6 +133,36 @@
                 });
             });
         });
+        // -------------------------------
+// Nutrition fetch for each meal
+// -------------------------------
+document.querySelectorAll(".meal-card").forEach(async (card) => {
+    const mealName = card.querySelector(".meal-name").innerText;
+
+    try {
+        const res = await fetch(`/nutrition?food=${encodeURIComponent("1 " + mealName)}`);
+        const data = await res.json();
+
+        if (!data || data.error) return;
+
+        const nutritionHTML = `
+            <div class="section">
+                <h3>🥗 Nutrition</h3>
+                <ul>
+                    <li>Calories: ${Math.round(data.calories)}</li>
+                    <li>Protein: ${Math.round(data.protein)}</li>
+                    <li>Carbs: ${Math.round(data.carbs)}</li>
+                    <li>Fat: ${Math.round(data.fat)}</li>
+                </ul>
+            </div>
+        `;
+
+        card.querySelector(".meal-body").insertAdjacentHTML("beforeend", nutritionHTML);
+
+    } catch (err) {
+        console.error("Nutrition fetch failed:", err);
+    }
+});
     </script>
 </body>
 </html>
