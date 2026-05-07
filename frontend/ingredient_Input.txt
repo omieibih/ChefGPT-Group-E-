@@ -1,7 +1,0 @@
-#beginning of ingredient_Input frontend work
-
-<<<<<<< HEAD
-added
-=======
-Added text
->>>>>>> main

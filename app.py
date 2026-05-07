@@ -24,9 +24,9 @@ load_dotenv()
 
 # Firebase is initialised as a side-effect of this import so it happens once,
 # before any blueprint tries to use it.
-import backend.firebase_init  # noqa: F401
+import backend.Core.firebase_init  # noqa: F401
 
-from backend.routes import all_blueprints
+from backend.Components import all_blueprints
 
 app = Flask(__name__)
 
@@ -162,9 +162,6 @@ def get_favorites_local():
 def remove_recipe(name):
     if name in _favorites:
         _favorites.remove(name)
-
-from backend.routes.nutrition_route import nutrition_bp
-app.register_blueprint(nutrition_bp)
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
