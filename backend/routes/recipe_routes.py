@@ -8,12 +8,23 @@ recipes_bp   – Flask Blueprint registered at app level
 get_recipes  – pure function usable by tests or other modules
 """
 
+# Used to convert the AI response (JSON string) into Python objects
 import json
+
+# Used to safely access environment variables like API keys
 import os
 
+# Flask imports:
+# Blueprint -> organizes routes into modules
+# render_template -> renders HTML pages
+# request -> accesses incoming form data
 from flask import Blueprint, render_template, request
+
+# Groq SDK used to communicate with the Llama AI model
 from groq import Groq
 
+# Create a Flask Blueprint named "recipes"
+# This allows these routes to be registered separately in the main app
 recipes_bp = Blueprint("recipes", __name__)
 
 
@@ -43,9 +54,13 @@ def get_recipes(
         Each dict has keys: name, description, core_ingredients,
         additional_ingredients, instructions.
     """
-    # API key comes from the environment to avoid CWE-798.
+
+    # Create a Groq client using the API key stored
+    # in environment variables for security purposes
     client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
+    # Build a text string describing the user's budget
+    # This gets inserted into the AI prompt later
     if budget:
         budget_text = (
             f"The user has a budget of ${budget} to spend on additional ingredients."
@@ -55,6 +70,8 @@ def get_recipes(
             "The user has no specific budget — suggest affordable additions."
         )
 
+    # Build instructions based on the user's cooking experience
+    # This helps the AI tailor recipe complexity and explanations
     experience_text = (
         f"The user's cooking experience level is {experience_level}. "
         "Adjust the recipe instructions based on this level. "
@@ -63,6 +80,9 @@ def get_recipes(
         "For Advanced, allow more complex techniques, timing details, and flavor-building steps."
     )
 
+    # Main prompt sent to the AI model
+    # Includes ingredients, budget, dietary restrictions,
+    # and formatting instructions
     prompt = f"""You are a helpful chef assistant. The user has these ingredients on hand: {ingredients}.
 {budget_text}
 {experience_text}
@@ -90,12 +110,19 @@ Respond ONLY with a raw JSON array — no markdown, no code fences, no explanati
   }}
 ]"""
 
+    # Send the prompt to the Groq API using the Llama model
     response = client.chat.completions.create(
         model="llama-3.3-70b-versatile",
+
+        # Conversation format for the AI model
         messages=[{"role": "user", "content": prompt}],
+
+        # Limits the maximum size of the AI response
         max_tokens=1500,
     )
 
+    # The AI returns text, so convert the JSON string
+    # into a real Python list of dictionaries
     return json.loads(response.choices[0].message.content.strip())
 
 
@@ -103,9 +130,14 @@ Respond ONLY with a raw JSON array — no markdown, no code fences, no explanati
 # Route
 # ---------------------------------------------------------------------------
 
+# Route that handles form submissions from the frontend
+# Only accepts POST requests
 @recipes_bp.route("/results", methods=["POST"])
 def results():
     """Accepts the ingredient form and renders AI-generated meal suggestions."""
+
+    # Get user input from the submitted form
+    # Default values are provided in case fields are missing
     ingredients = request.form.get("ingredients", "")
     budget = request.form.get("budget", "").strip()
     experience_level = request.form.get("experience_level", "Beginner")
@@ -113,10 +145,16 @@ def results():
 
     try:
 
+        # First attempt to generate meals directly
         meals = get_recipes(ingredients, budget, experience_level, dietary_filter)
 
+        # Import the main app module
+        # This may be done to access another version/wrapper
+        # of the get_recipes function
         import app as app_module
 
+        # Generate recipes again using the function from app.py
+        # This overwrites the previous meals variable
         meals = app_module.get_recipes(
             ingredients,
             budget,
@@ -124,11 +162,17 @@ def results():
             dietary_filter,
         )
 
+        # No error occurred
         error = None
+
+    # If anything fails during recipe generation,
+    # store the error message and return an empty meals list
     except Exception as exc:
         meals = []
         error = str(exc)
 
+    # Render the results page and pass all variables
+    # to the HTML template
     return render_template(
         "results.html",
         meals=meals,
