@@ -15,7 +15,6 @@ from backend.routes.pages import pages_bp
 from backend.routes.recipe_routes import recipes_bp
 from backend.routes.experience_level import experience_level_bp
 
-
 all_blueprints = [
     pages_bp,
     recipes_bp,
