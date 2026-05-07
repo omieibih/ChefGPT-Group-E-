@@ -40,7 +40,7 @@ def test_ingredients_page_receives_experience_level(client):
     assert b"Intermediate" in response.data
 
 
-@patch("backend.routes.recipe_routes.get_recipes")
+@patch("backend.Components.recipes.get_recipes")
 def test_results_uses_selected_experience_level(mock_get_recipes, client):
     """
     Test that the /results route passes the selected experience level
@@ -87,7 +87,7 @@ def test_results_uses_selected_experience_level(mock_get_recipes, client):
     assert b"Results" in response.data or b"ChefGPT" in response.data
 
 
-@patch("backend.routes.recipe_routes.get_recipes")
+@patch("backend.Components.recipes.get_recipes")
 def test_results_defaults_to_beginner_when_experience_level_missing(mock_get_recipes, client):
     """
     Test the reliability fallback: if no experience level is submitted,

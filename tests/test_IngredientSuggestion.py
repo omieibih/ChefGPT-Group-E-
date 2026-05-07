@@ -11,7 +11,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 # test_ai_ingredient.py
 from app import get_ingredients
-from backend.ingredient_suggestions import generate_ingredient_suggestions
+from backend.Components.ingredient_suggestions import generate_ingredient_suggestions
 
 # Test 1: High protein query
 def test_high_protein():
