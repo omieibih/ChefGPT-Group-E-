@@ -14,6 +14,7 @@ from backend.routes.ingredient_suggestion import ingredients_bp
 from backend.routes.pages import pages_bp
 from backend.routes.recipe_routes import recipes_bp
 from backend.routes.experience_level import experience_level_bp
+from backend.shopping_list import shopping_bp
 
 all_blueprints = [
     pages_bp,
@@ -21,4 +22,5 @@ all_blueprints = [
     favorites_bp,
     ingredients_bp,
     experience_level_bp,
+    shopping_bp,
 ]

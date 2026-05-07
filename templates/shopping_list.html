@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Shopping List - ChefGPT</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .shopping-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .add-item-form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+        .add-item-form input {
+            flex: 1;
+            padding: 10px;
+            font-size: 15px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+        .shopping-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+        .shopping-item.completed span {
+            text-decoration: line-through;
+            color: #999;
+        }
+        .shopping-item span {
+            flex: 1;
+            font-size: 15px;
+        }
+        .delete-btn {
+            background: #e05555;
+            font-size: 13px;
+            padding: 6px 12px;
+        }
+        .delete-btn:hover {
+            background: #c04040;
+        }
+        .no-items {
+            color: #777;
+            font-style: italic;
+            margin-top: 20px;
+        }
+        .user-bar {
+            text-align: right;
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #444;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="user-bar">
+            <span id="user-email"></span>
+            <button id="logout-btn" style="font-size:13px; padding: 6px 12px; margin-left: 10px;">Log Out</button>
+        </div>
+
+        <h1>🛒 Shopping List</h1>
+
+        <form class="add-item-form" id="add-form">
+            <input type="text" id="item-input" placeholder="Add an ingredient..." required />
+            <button type="submit">Add</button>
+        </form>
+
+        <div id="shopping-items">
+            <p class="no-items">Loading your shopping list...</p>
+        </div>
+
+        <a href="/" class="back-link">⬅ Back to ChefGPT</a>
+    </div>
+
+    <script type="module">
+        import { auth } from "/static/firebase-config.js";
+        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+        const itemsDiv = document.getElementById("shopping-items");
+        let currentToken = null;
+
+        function escapeHtml(value) {
+            return String(value)
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll('"', "&quot;")
+                .replaceAll("'", "&#39;");
+        }
+
+        function renderItems(items) {
+            if (items.length === 0) {
+                itemsDiv.innerHTML = `<p class="no-items">Your shopping list is empty. Add some ingredients above!</p>`;
+                return;
+            }
+            itemsDiv.innerHTML = items.map(item => `
+                <div class="shopping-item ${item.completed ? "completed" : ""}" id="item-${item.id}">
+                    <input type="checkbox" ${item.completed ? "checked" : ""} data-id="${item.id}" />
+                    <span>${escapeHtml(item.name)}</span>
+                    <button class="delete-btn" data-id="${item.id}">Remove</button>
+                </div>
+            `).join("");
+
+            document.querySelectorAll(".delete-btn").forEach(btn => {
+                btn.addEventListener("click", () => deleteItem(btn.dataset.id));
+            });
+        }
+
+        async function loadItems() {
+            try {
+                const res = await fetch("/api/shopping-list", {
+                    headers: { "Authorization": "Bearer " + currentToken }
+                });
+                const items = await res.json();
+                renderItems(items);
+            } catch (e) {
+                itemsDiv.innerHTML = `<p class="error">Failed to load shopping list: ${escapeHtml(e.message)}</p>`;
+            }
+        }
+
+        async function deleteItem(id) {
+            try {
+                const res = await fetch(`/api/shopping-list/${id}`, {
+                    method: "DELETE",
+                    headers: { "Authorization": "Bearer " + currentToken }
+                });
+                if (res.ok) {
+                    document.getElementById(`item-${id}`).remove();
+                    if (document.querySelectorAll(".shopping-item").length === 0) {
+                        itemsDiv.innerHTML = `<p class="no-items">Your shopping list is empty. Add some ingredients above!</p>`;
+                    }
+                }
+            } catch (e) {
+                alert("Failed to remove item: " + e.message);
+            }
+        }
+
+        document.getElementById("add-form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const input = document.getElementById("item-input");
+            const name = input.value.trim();
+            if (!name) return;
+
+            try {
+                const res = await fetch("/api/shopping-list", {
+                    method: "POST",
+                    headers: {
+                        "Authorization": "Bearer " + currentToken,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ name })
+                });
+                const item = await res.json();
+                input.value = "";
+                await loadItems();
+            } catch (e) {
+                alert("Failed to add item: " + e.message);
+            }
+        });
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = "/login";
+                return;
+            }
+            document.getElementById("user-email").textContent = user.email;
+            document.getElementById("logout-btn").addEventListener("click", () => {
+                signOut(auth).then(() => window.location.href = "/login");
+            });
+            currentToken = await user.getIdToken();
+            await loadItems();
+        });
+    </script>
+</body>
+</html>

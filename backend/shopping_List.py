@@ -3,12 +3,8 @@
 from flask import Blueprint, request, jsonify, render_template
 
 
-# Import Firestore database instance
-from backend.firebase_init import db
-
-
-# Import helper function that verifies Firebase login token
-from backend.auth_helper import verify_firebase_token
+from firebase_admin import firestore
+from backend.auth_helper import get_current_user
 
 
 
@@ -77,7 +73,7 @@ def get_items():
    # If valid:
    #   returns user info including uid
    # ---------------------------------------------
-   user = verify_firebase_token(request)
+   user = get_current_user(request)
 
 
    # ---------------------------------------------
@@ -93,7 +89,7 @@ def get_items():
    #
    # .stream() gets ALL documents
    # ---------------------------------------------
-   docs = db.collection("users") \
+   docs = firestore.client().collection("users") \
        .document(user["uid"]) \
        .collection("shopping_list") \
        .stream()
@@ -149,7 +145,7 @@ def add_item():
 
 
    # Verify logged-in user
-   user = verify_firebase_token(request)
+   user = get_current_user(request)
 
 
    # Get JSON data from frontend request
@@ -180,7 +176,7 @@ def add_item():
    # Example:
    # users/abc123/shopping_list/randomDocId
    # ---------------------------------------------
-   ref = db.collection("users") \
+   ref = firestore.client().collection("users") \
        .document(user["uid"]) \
        .collection("shopping_list") \
        .add(item)
@@ -215,13 +211,13 @@ def delete_item(doc_id):
 
 
    # Verify user is logged in
-   user = verify_firebase_token(request)
+   user = get_current_user(request)
 
 
    # ---------------------------------------------
    # Delete Firestore document
    # ---------------------------------------------
-   db.collection("users") \
+   firestore.client().collection("users") \
        .document(user["uid"]) \
        .collection("shopping_list") \
        .document(doc_id) \
