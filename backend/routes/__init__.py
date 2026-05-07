@@ -10,7 +10,7 @@ Usage in app.py
 """
 
 from backend.routes.favorites_api import favorites_bp
-from backend.routes.Ingredient_Suggestion import ingredients_bp
+from backend.routes.ingredient_suggestion import ingredients_bp
 from backend.routes.pages import pages_bp
 from backend.routes.recipe_routes import recipes_bp
 from backend.routes.experience_level import experience_level_bp
