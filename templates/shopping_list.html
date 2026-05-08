@@ -4,12 +4,6 @@
     <title>Shopping List - ChefGPT</title>
     <link rel="stylesheet" href="/static/style.css">
     <style>
-        .shopping-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
         .add-item-form {
             display: flex;
             gap: 10px;
@@ -31,6 +25,12 @@
             border-radius: 8px;
             margin-bottom: 8px;
         }
+        .shopping-item input[type="checkbox"] {
+            flex-shrink: 0;
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
         .shopping-item.completed span {
             text-decoration: line-through;
             color: #999;
@@ -38,11 +38,14 @@
         .shopping-item span {
             flex: 1;
             font-size: 15px;
+            text-align: left;
         }
         .delete-btn {
             background: #e05555;
             font-size: 13px;
             padding: 6px 12px;
+            margin-top: 0;
+            flex-shrink: 0;
         }
         .delete-btn:hover {
             background: #c04040;
@@ -52,20 +55,19 @@
             font-style: italic;
             margin-top: 20px;
         }
-        .user-bar {
-            text-align: right;
-            margin-bottom: 15px;
-            font-size: 14px;
-            color: #444;
-        }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="user-bar">
-            <span id="user-email"></span>
-            <button id="logout-btn" style="font-size:13px; padding: 6px 12px; margin-left: 10px;">Log Out</button>
-        </div>
+        <nav class="page-nav">
+            <div class="page-nav__links">
+                <a href="/favorites" class="nav-link nav-link--warm">⭐ My Favorites</a>
+            </div>
+            <div class="page-nav__user">
+                <span id="user-email" class="user-email-text"></span>
+                <button id="logout-btn" class="logout-btn">Log Out</button>
+            </div>
+        </nav>
 
         <h1>🛒 Shopping List</h1>
 

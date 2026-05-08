@@ -139,6 +139,93 @@ button:hover {
     text-decoration: underline;
 }
 
+.page-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 14px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid #e4edf8;
+    gap: 10px;
+}
+
+.page-nav__links {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.nav-link {
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    padding: 5px 11px;
+    border-radius: 6px;
+    transition: background 0.15s;
+    white-space: nowrap;
+}
+
+.nav-link--warm {
+    color: #c96a1a;
+    background: #fff3e8;
+}
+
+.nav-link--warm:hover {
+    background: #ffe2c6;
+}
+
+.nav-link--cool {
+    color: #1762a8;
+    background: #e8f2ff;
+}
+
+.nav-link--cool:hover {
+    background: #d0e5ff;
+}
+
+.page-nav__user {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.user-email-text {
+    font-size: 12px;
+    color: #888;
+    max-width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.logout-btn {
+    margin-top: 0;
+    padding: 5px 12px;
+    font-size: 13px;
+    border-radius: 6px;
+    background: #1f6fb2;
+    white-space: nowrap;
+}
+
+.change-level-link {
+    display: inline-block;
+    font-size: 13px;
+    color: #1f6fb2;
+    text-decoration: none;
+    margin-bottom: 16px;
+    opacity: 0.8;
+}
+
+.change-level-link:hover {
+    text-decoration: underline;
+    opacity: 1;
+}
+
+.label-centered {
+    text-align: center;
+}
+
 .error {
     color: #b42318;
     font-size: 14px;

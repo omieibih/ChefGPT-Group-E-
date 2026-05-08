@@ -6,21 +6,23 @@
 </head>
 <body>
     <div class="container">
+        <nav class="page-nav">
+            <div class="page-nav__links">
+                <a href="/favorites" class="nav-link nav-link--warm">⭐ My Favorites</a>
+                <a href="/shopping-list" class="nav-link nav-link--cool">🛒 Shopping List</a>
+            </div>
+            <div class="page-nav__user">
+                <span id="user-email" class="user-email-text"></span>
+                <button id="logout-btn" class="logout-btn">Log Out</button>
+            </div>
+        </nav>
+
         <h1>👨‍🍳 ChefGPT</h1>
         <p>
             Now enter your ingredients. Your selected level is:
             <strong>{{ experience_level }}</strong>
         </p>
-
-        <a href="/" class="back-link">Change experience level</a>
-        
-        <!-- User info bar -->
-        <div id="user-bar" style="text-align:right; margin-bottom: 10px;">
-            <a href="/favorites" style="color:#ff914d; font-weight:bold; margin-right:15px;">⭐ My Favorites</a>
-            <a href="/shopping-list" style="color:#4da6ff; font-weight:bold; margin-right:15px;">🛒 Shopping List</a>
-            <span id="user-email"></span>
-            <button id="logout-btn" style="margin-left: 10px;">Log Out</button>
-        </div>
+        <a href="/" class="change-level-link">↩ Change experience level</a>
 
         <form action="/results" method="POST">
             <input type="hidden" name="experience_level" value="{{ experience_level }}">
