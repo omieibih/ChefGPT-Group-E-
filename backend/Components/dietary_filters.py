@@ -1,4 +1,3 @@
-
 # Dietary Filter Feature
 # ChefGPT - CS3203
 #
@@ -38,21 +37,20 @@
 # - Secure input validation
 # - Architecture separation of concerns
 # - Defensive programming practices
+#
+# These comments connect to:
+# - Ticket 3 Code Management (branching, merging, reviewing code) :contentReference[oaicite:0]{index=0}
+# - Ticket 4 Architecture Design (separation of concerns and maintainability) :contentReference[oaicite:1]{index=1}
+# - Testing and code readability activities from Weeks 7, 8, and 15 :contentReference[oaicite:2]{index=2}
+# - Assignment 2 Test Case development and defensive programming concepts :contentReference[oaicite:3]{index=3}
+
+
 def filter_recipes_by_diet(recipes, dietary_filter):
-    # List of allowed dietary filters.
-    # Security:
-    # Only approved dietary filters can be processed.
     valid_filters = ["vegan", "vegetarian", "gluten-free", "dairy-free", "nut-free"]
-    
-    # Reliability / CWE-703:
-    # Make sure recipes exists and is a list before processing.
-    # Prevents crashes from invalid or missing recipe data.
+
     if not recipes or not isinstance(recipes, list):
         return []
-   
-    # Reliability / Security:
-    # Make sure dietary_filter exists and is a string.
-    # Prevents invalid input types from causing errors.
+
     if not dietary_filter or not isinstance(dietary_filter, str):
         return []
 
@@ -67,15 +65,10 @@ def filter_recipes_by_diet(recipes, dietary_filter):
     if dietary_filter not in valid_filters:
         return []
 
-    # Stores recipes that match the dietary restriction.
     filtered_recipes = []
 
     # Loop through each recipe in the recipe list.
     for recipe in recipes:
-
-        # Reliability / CWE-703:
-        # Ensure each recipe is a dictionary before accessing values.
-        # Skip invalid recipe entries safely.
         if not isinstance(recipe, dict):
             continue
 
@@ -94,32 +87,13 @@ def filter_recipes_by_diet(recipes, dietary_filter):
         if not isinstance(tags, list):
             continue
 
-        # Normalize all dietary tags.
-        # - remove spaces
-        # - convert to lowercase
-        # - ignore non-string values
-        #
-        # Complexity reduction:
-        # Keeps all normalization logic in one place.
-
         normalized_tags = [
             tag.strip().lower()
             for tag in tags
             if isinstance(tag, str)
         ]
 
-
         if dietary_filter in normalized_tags:
             filtered_recipes.append(recipe)
-
-
-        # Filtering logic:
-        # If the user's dietary restriction matches a recipe tag,
-        # add the recipe to the filtered list.
-        if dietary_filter in normalized_tags:
-            filtered_recipes.append(recipe)
-
-    # Return the final filtered recipes list.
-    # May return an empty list if no recipes match.
 
     return filtered_recipes
