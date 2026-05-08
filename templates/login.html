@@ -1,25 +1,40 @@
 <!DOCTYPE html>
+<!-- HTML5 document type declaration -->
 <html lang="en">
+<!-- lang="en" tells browsers and screen readers the content is in English -->
 <head>
+  <!-- Character encoding — UTF-8 supports all standard characters -->
   <meta charset="UTF-8" />
+  <!-- Browser tab title for the login page -->
   <title>ChefGPT – Login</title>
+  <!-- Link the shared stylesheet for consistent styling across all pages -->
   <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
+  <!-- Centered authentication card that holds the login form -->
   <div class="auth-container">
+    <!-- Page heading with a pan emoji to reinforce the ChefGPT brand -->
     <h1>🍳 ChefGPT</h1>
+    <!-- Brief tagline explaining why an account is needed -->
     <p>Sign in to save ingredients and favorite recipes</p>
 
+    <!-- Error message div — hidden by default; auth.js reveals it on failed attempts -->
     <div id="auth-error" class="error-msg" style="display:none;"></div>
 
+    <!-- Email address input — auth.js reads its value when a button is clicked -->
     <input type="email" id="email" placeholder="Email" />
+    <!-- Password input — type="password" masks the entered characters -->
     <input type="password" id="password" placeholder="Password" />
 
+    <!-- Log In button — triggers signInWithEmailAndPassword in auth.js -->
     <button id="login-btn">Log In</button>
+    <!-- Create Account button — triggers createUserWithEmailAndPassword in auth.js -->
     <button id="signup-btn">Create Account</button>
+    <!-- Google Sign-In button — triggers the Google OAuth popup in auth.js -->
     <button id="google-btn">Sign in with Google</button>
   </div>
 
+  <!-- Load auth.js as a module so it can use ES import syntax for firebase-config.js -->
   <script type="module" src="/static/auth.js"></script>
 </body>
 </html>

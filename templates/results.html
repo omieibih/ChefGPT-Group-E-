@@ -1,42 +1,65 @@
 <!DOCTYPE html>
+<!-- HTML5 document type declaration -->
 <html>
 <head>
+    <!-- Browser tab title for the recipe results page -->
     <title>Results - ChefGPT</title>
+    <!-- Shared stylesheet for consistent visual styling across all pages -->
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
+    <!-- Main content card container -->
     <div class="container">
+        <!-- Page heading shows which ingredients were submitted -->
         <h1>👨‍🍳 Recipes for "{{ ingredients }}"</h1>
 
+        <!-- Show the user's budget constraint only if one was provided -->
         {% if budget %}
+            <!-- Budget pill tag displayed below the heading -->
             <p class="budget-tag">💰 Budget: ${{ budget }}</p>
         {% endif %}
 
+        <!-- Show an error message if the recipe API returned an error -->
         {% if error %}
+            <!-- Error paragraph styled in red via the .error class -->
             <p class="error">Something went wrong: {{ error }}</p>
+        <!-- Show recipe cards if the backend returned meals successfully -->
         {% elif meals %}
+            <!-- Loop over each meal object in the meals list -->
             {% for meal in meals %}
+            <!-- Each meal uses a <details> element so it can be expanded and collapsed -->
             <details class="meal-card">
+                <!-- The summary is the always-visible collapsed header row -->
                 <summary>
+                    <!-- Recipe name in brand blue bold text -->
                     <span class="meal-name">{{ meal.name }}</span>
+                    <!-- Short description shown beneath the recipe name -->
                     <span class="meal-desc">{{ meal.description }}</span>
+                    <!-- Arrow icon that rotates when the card is expanded -->
                     <span class="dropdown-icon">▼</span>
                 </summary>
 
+                <!-- Expanded card body — hidden until the user clicks the summary -->
                 <div class="meal-body">
+                    <!-- Section: ingredients the user already has on hand -->
                     <div class="section">
                         <h3>🧺 Ingredients You Have</h3>
+                        <!-- Bulleted list of ingredients the user provided -->
                         <ul>
+                            <!-- Iterate over the core ingredients list for this meal -->
                             {% for item in meal.core_ingredients %}
                                 <li>{{ item }}</li>
                             {% endfor %}
                         </ul>
                     </div>
 
+                    <!-- Section: extra ingredients to buy — only rendered when the list is non-empty -->
                     {% if meal.additional_ingredients %}
                     <div class="section">
                         <h3>🛒 Additional Ingredients to Buy</h3>
+                        <!-- Bulleted list of ingredients the user would need to purchase -->
                         <ul>
+                            <!-- Iterate over the list of additional ingredients needed -->
                             {% for item in meal.additional_ingredients %}
                                 <li>{{ item }}</li>
                             {% endfor %}
@@ -44,9 +67,12 @@
                     </div>
                     {% endif %}
 
+                    <!-- Section: step-by-step cooking instructions -->
                     <div class="section">
                         <h3>📋 Instructions</h3>
+                        <!-- Numbered ordered list for sequential cooking steps -->
                         <ol>
+                            <!-- Iterate over each instruction step -->
                             {% for step in meal.instructions %}
                                 <li>{{ step }}</li>
                             {% endfor %}
@@ -54,39 +80,52 @@
                     </div>
 
                     <!-- Save Recipe Button -->
+                    <!-- data-* attributes store recipe data so the JS handler can read them -->
                     <button
                         class="save-btn"
                         data-name="{{ meal.name }}"
                         data-ingredients="{{ meal.core_ingredients | join(', ') }}"
                         data-instructions="{{ meal.instructions | join(' | ') }}">
+                        <!-- Star emoji reinforces the save-to-favorites action -->
                         ⭐ Save Recipe
                     </button>
+                    <!-- Inline success confirmation shown next to the button after saving -->
                     <span class="save-msg" style="display:none; margin-left:10px; color:green;">Saved!</span>
                 </div>
             </details>
             {% endfor %}
+        <!-- Fallback message shown when no meals were returned by the API -->
         {% else %}
             <p>No recipes found. Please try again.</p>
         {% endif %}
 
+        <!-- Form that posts back to /ingredients so the user can try different ingredients -->
         <form action="/ingredients" method="POST" style="margin-top: 25px;">
+            <!-- Pass the experience level through so the user does not have to re-select it -->
             <input type="hidden" name="experience_level" value="{{ experience_level | default('Beginner') }}">
+            <!-- Styled as a link but submitted as a form button so the hidden field is sent -->
             <button type="submit" class="back-link" style="background: none; border: none; padding: 0; font: inherit; cursor: pointer;">
                 ⬅ Try again
             </button>
-        </form>    
+        </form>
 </div>
 
+    <!-- Inline module script: handles saving recipes to Firebase and fetching nutrition data -->
     <script type="module">
+        // Import the shared Firebase auth instance
         import { auth } from "/static/firebase-config.js";
+        // Import the auth state listener to know when the user is signed in
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
         // Wait for auth to be ready, then wire up save buttons
         onAuthStateChanged(auth, async (user) => {
+            // Select all Save Recipe buttons rendered on the page
             const buttons = document.querySelectorAll(".save-btn");
 
+            // Attach a click handler to each save button
             buttons.forEach(btn => {
                 btn.addEventListener("click", async () => {
+                    // Require a signed-in user before allowing a save
                     if (!user) {
                         alert("Please log in to save recipes.");
                         return;
@@ -95,74 +134,87 @@
                     // Get Firebase ID token to authenticate with backend
                     const token = await user.getIdToken();
 
+                    // Build the payload from the button's data-* attributes
                     const payload = {
-                        name: btn.dataset.name,
-                        ingredients: btn.dataset.ingredients,
-                        instructions: btn.dataset.instructions
+                        name: btn.dataset.name,                // Recipe name
+                        ingredients: btn.dataset.ingredients,  // Comma-separated ingredient list
+                        instructions: btn.dataset.instructions // Pipe-separated instruction steps
                     };
 
                     try {
+                        // POST the recipe data to the favorites API endpoint
                         const response = await fetch("/api/favorites", {
                             method: "POST",
                             headers: {
-                                "Content-Type": "application/json",
-                                "Authorization": "Bearer " + token
+                                "Content-Type": "application/json", // Tell the server we are sending JSON
+                                "Authorization": "Bearer " + token  // Firebase auth token for server verification
                             },
-                            body: JSON.stringify(payload)
+                            body: JSON.stringify(payload) // Serialize the payload to a JSON string
                         });
 
                         if (response.ok) {
                             // Show "Saved!" message next to button
-                            const msg = btn.nextElementSibling;
-                            msg.style.display = "inline";
-                            btn.disabled = true;
-                            btn.textContent = "✅ Saved";
+                            const msg = btn.nextElementSibling; // The .save-msg span that follows the button
+                            msg.style.display = "inline";       // Make the confirmation visible
+                            btn.disabled = true;                // Prevent the user from saving the same recipe twice
+                            btn.textContent = "✅ Saved";       // Update the button label to confirm success
                         } else {
+                            // Start with a default error message in case the body cannot be parsed
                             let message = "Failed to save recipe. Please try again.";
                             try {
+                                // Attempt to read a more specific error message from the response body
                                 const errorData = await response.json();
                                 message = errorData.error || errorData.details || message;
                             } catch (_) {
                                 // Ignore JSON parsing errors and keep default message.
                             }
-                            alert(message);
+                            alert(message); // Show the error message to the user
                         }
                     } catch (e) {
+                        // Catch network errors or unexpected exceptions
                         alert("Error saving recipe: " + e.message);
                     }
                 });
             });
         });
         // -------------------------------
-// Nutrition fetch for each meal
-// -------------------------------
-document.querySelectorAll(".meal-card").forEach(async (card) => {
-    const mealName = card.querySelector(".meal-name").innerText;
+        // Nutrition fetch for each meal
+        // -------------------------------
+        // Query all meal card elements rendered on the page
+        document.querySelectorAll(".meal-card").forEach(async (card) => {
+            // Read the recipe name from the .meal-name span inside this card
+            const mealName = card.querySelector(".meal-name").innerText;
 
-    try {
-        const res = await fetch(`/nutrition?food=${encodeURIComponent("1 " + mealName)}`);
-        const data = await res.json();
+            try {
+                // Request nutrition data for one serving of this meal from the backend
+                const res = await fetch(`/nutrition?food=${encodeURIComponent("1 " + mealName)}`);
+                // Parse the JSON response from the nutrition API
+                const data = await res.json();
 
-        if (!data || data.error) return;
+                // If the API returned an error or no data, skip rendering nutrition for this card
+                if (!data || data.error) return;
 
-        const nutritionHTML = `
-            <div class="section">
-                <h3>🥗 Nutrition</h3>
-                <ul>
-                    <li>Calories: ${Math.round(data.calories)}</li>
-                    <li>Protein: ${Math.round(data.protein)}</li>
-                    <li>Carbs: ${Math.round(data.carbs)}</li>
-                    <li>Fat: ${Math.round(data.fat)}</li>
-                </ul>
-            </div>
-        `;
+                // Build an HTML string with the nutrition facts
+                const nutritionHTML = `
+                    <div class="section">
+                        <h3>🥗 Nutrition</h3>
+                        <ul>
+                            <li>Calories: ${Math.round(data.calories)}</li>
+                            <li>Protein: ${Math.round(data.protein)}</li>
+                            <li>Carbs: ${Math.round(data.carbs)}</li>
+                            <li>Fat: ${Math.round(data.fat)}</li>
+                        </ul>
+                    </div>
+                `;
 
-        card.querySelector(".meal-body").insertAdjacentHTML("beforeend", nutritionHTML);
+                // Append the nutrition section at the end of this card's expanded body
+                card.querySelector(".meal-body").insertAdjacentHTML("beforeend", nutritionHTML);
 
-    } catch (err) {
-        console.error("Nutrition fetch failed:", err);
-    }
-});
+            } catch (err) {
+                // Log fetch errors quietly — nutrition info is supplemental, not critical
+                console.error("Nutrition fetch failed:", err);
+            }
+        });
     </script>
 </body>
 </html>

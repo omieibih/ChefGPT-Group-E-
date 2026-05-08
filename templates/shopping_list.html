@@ -1,188 +1,248 @@
 <!DOCTYPE html>
+<!-- HTML5 document type declaration -->
 <html>
 <head>
+    <!-- Browser tab title for the shopping list page -->
     <title>Shopping List - ChefGPT</title>
+    <!-- Shared stylesheet for consistent styling across all pages -->
     <link rel="stylesheet" href="/static/style.css">
+    <!-- Page-specific styles scoped to the shopping list view -->
     <style>
+        /* Form row containing the text input and Add button side by side */
         .add-item-form {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 25px;
+            display: flex;       /* Flex row layout */
+            gap: 10px;           /* Gap between the input and the button */
+            margin-bottom: 25px; /* Space below the form before the list begins */
         }
+        /* Text input inside the add-item form */
         .add-item-form input {
-            flex: 1;
-            padding: 10px;
-            font-size: 15px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
+            flex: 1;             /* Stretch the input to fill available space */
+            padding: 10px;       /* Comfortable inner spacing */
+            font-size: 15px;     /* Slightly larger than default for readability */
+            border: 1px solid #ccc; /* Standard light grey border */
+            border-radius: 6px;  /* Rounded corners matching the UI style */
         }
+        /* Row representing a single shopping list item */
         .shopping-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 10px 14px;
-            background: #f9f9f9;
-            border-radius: 8px;
-            margin-bottom: 8px;
+            display: flex;       /* Flex row to align checkbox, label, and delete button */
+            align-items: center; /* Vertically center all row elements */
+            gap: 12px;           /* Gap between the checkbox, text, and button */
+            padding: 10px 14px;  /* Inner spacing for a comfortable row height */
+            background: #f9f9f9; /* Light grey background distinguishes rows from the white card */
+            border-radius: 8px;  /* Rounded corners */
+            margin-bottom: 8px;  /* Vertical gap between items */
         }
+        /* Checkbox inside each shopping list row */
         .shopping-item input[type="checkbox"] {
-            flex-shrink: 0;
-            width: 16px;
-            height: 16px;
-            cursor: pointer;
+            flex-shrink: 0;  /* Prevent the checkbox from shrinking when text is long */
+            width: 16px;     /* Explicit size for a consistent tap target */
+            height: 16px;    /* Same as width */
+            cursor: pointer; /* Pointer cursor signals interactivity */
         }
+        /* Strike-through style applied to a completed (checked) item row */
         .shopping-item.completed span {
-            text-decoration: line-through;
-            color: #999;
+            text-decoration: line-through; /* Line through the text shows the item is done */
+            color: #999;                   /* Muted grey for completed items */
         }
+        /* Item name text inside the row */
         .shopping-item span {
-            flex: 1;
-            font-size: 15px;
-            text-align: left;
+            flex: 1;           /* Stretch to fill the space between checkbox and delete button */
+            font-size: 15px;   /* Match the add-item form font size */
+            text-align: left;  /* Left-align item labels */
         }
+        /* Red delete button shown at the end of each row */
         .delete-btn {
-            background: #e05555;
-            font-size: 13px;
-            padding: 6px 12px;
-            margin-top: 0;
-            flex-shrink: 0;
+            background: #e05555; /* Red background signals a destructive action */
+            font-size: 13px;     /* Smaller than the primary buttons */
+            padding: 6px 12px;   /* Compact padding */
+            margin-top: 0;       /* Override the default button top margin */
+            flex-shrink: 0;      /* Prevent the button from shrinking */
         }
+        /* Delete button hover — darker red for interaction feedback */
         .delete-btn:hover {
-            background: #c04040;
+            background: #c04040; /* Deeper red on hover */
         }
+        /* Empty-state message shown when the list has no items */
         .no-items {
-            color: #777;
-            font-style: italic;
-            margin-top: 20px;
+            color: #777;         /* Muted grey for placeholder text */
+            font-style: italic;  /* Italic style for the empty-state message */
+            margin-top: 20px;    /* Space above the message */
         }
     </style>
 </head>
 <body>
+    <!-- Main content card container -->
     <div class="container">
+        <!-- Top navigation bar with links and the logged-in user info -->
         <nav class="page-nav">
+            <!-- Left side: navigation links to other pages -->
             <div class="page-nav__links">
+                <!-- Link to the My Favorites page using the warm color variant -->
                 <a href="/favorites" class="nav-link nav-link--warm">⭐ My Favorites</a>
             </div>
+            <!-- Right side: user email and logout button -->
             <div class="page-nav__user">
+                <!-- Placeholder for the signed-in user's email — populated by JavaScript -->
                 <span id="user-email" class="user-email-text"></span>
+                <!-- Logout button — signs the user out and redirects to /login -->
                 <button id="logout-btn" class="logout-btn">Log Out</button>
             </div>
         </nav>
 
+        <!-- Page heading with a shopping cart emoji -->
         <h1>🛒 Shopping List</h1>
 
+        <!-- Form to add a new item to the shopping list -->
         <form class="add-item-form" id="add-form">
+            <!-- Text input for the new ingredient name -->
             <input type="text" id="item-input" placeholder="Add an ingredient..." required />
+            <!-- Submit button sends the form to the add handler -->
             <button type="submit">Add</button>
         </form>
 
+        <!-- Container for the dynamically rendered shopping list items -->
+        <!-- JavaScript replaces this content with items or an empty-state message -->
         <div id="shopping-items">
+            <!-- Loading placeholder shown before items are fetched from the API -->
             <p class="no-items">Loading your shopping list...</p>
         </div>
 
+        <!-- Link back to the main ChefGPT page -->
         <a href="/" class="back-link">⬅ Back to ChefGPT</a>
     </div>
 
+    <!-- Module script: manages the shopping list using Firebase auth and the REST API -->
     <script type="module">
+        // Import the shared Firebase auth instance
         import { auth } from "/static/firebase-config.js";
+        // Import the auth state listener and sign-out function
         import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
+        // Cache the shopping items container so render functions can update it directly
         const itemsDiv = document.getElementById("shopping-items");
+        // Module-level token that is set after the user signs in
         let currentToken = null;
 
+        // Sanitize a value before inserting it into innerHTML to prevent XSS
         function escapeHtml(value) {
             return String(value)
-                .replaceAll("&", "&amp;")
-                .replaceAll("<", "&lt;")
-                .replaceAll(">", "&gt;")
-                .replaceAll('"', "&quot;")
-                .replaceAll("'", "&#39;");
+                .replaceAll("&", "&amp;")   // Escape ampersands first to avoid double-encoding
+                .replaceAll("<", "&lt;")    // Escape less-than to block tag injection
+                .replaceAll(">", "&gt;")    // Escape greater-than for symmetry
+                .replaceAll('"', "&quot;")  // Escape double quotes inside attribute values
+                .replaceAll("'", "&#39;");  // Escape single quotes inside attribute values
         }
 
+        // Render an array of shopping list items into the items container
         function renderItems(items) {
+            // Show the empty-state message if there are no items
             if (items.length === 0) {
                 itemsDiv.innerHTML = `<p class="no-items">Your shopping list is empty. Add some ingredients above!</p>`;
                 return;
             }
+            // Build an HTML row for each item and join them into a single string
             itemsDiv.innerHTML = items.map(item => `
                 <div class="shopping-item ${item.completed ? "completed" : ""}" id="item-${item.id}">
+                    <!-- Checkbox reflects the completed state; clicking it will toggle via the API -->
                     <input type="checkbox" ${item.completed ? "checked" : ""} data-id="${item.id}" />
+                    <!-- Item name text -->
                     <span>${escapeHtml(item.name)}</span>
+                    <!-- Remove button stores the item ID so the delete handler can target it -->
                     <button class="delete-btn" data-id="${item.id}">Remove</button>
                 </div>
             `).join("");
 
+            // Wire up each Remove button to the deleteItem function
             document.querySelectorAll(".delete-btn").forEach(btn => {
                 btn.addEventListener("click", () => deleteItem(btn.dataset.id));
             });
         }
 
+        // Fetch all shopping list items for the current user from the API
         async function loadItems() {
             try {
+                // GET request with the auth token to identify the user
                 const res = await fetch("/api/shopping-list", {
                     headers: { "Authorization": "Bearer " + currentToken }
                 });
+                // Throw an error if the response status is not OK
                 if (!res.ok) {
-                    const errorData = await res.json().catch(() => ({}));
+                    const errorData = await res.json().catch(() => ({})); // Parse error or use empty object
                     throw new Error(errorData.error || "Failed to load shopping list.");
                 }
+                // Parse the items array and render them
                 const items = await res.json();
                 renderItems(items);
             } catch (e) {
+                // Show a user-friendly error inside the items container
                 itemsDiv.innerHTML = `<p class="error">Failed to load shopping list: ${escapeHtml(e.message)}</p>`;
             }
         }
 
+        // Delete a shopping list item by its ID
         async function deleteItem(id) {
             try {
+                // Send a DELETE request for this specific item
                 const res = await fetch(`/api/shopping-list/${id}`, {
                     method: "DELETE",
-                    headers: { "Authorization": "Bearer " + currentToken }
+                    headers: { "Authorization": "Bearer " + currentToken } // Auth token required
                 });
                 if (res.ok) {
+                    // Remove the item row from the DOM immediately
                     document.getElementById(`item-${id}`).remove();
+                    // If all items are gone, show the empty-state message
                     if (document.querySelectorAll(".shopping-item").length === 0) {
                         itemsDiv.innerHTML = `<p class="no-items">Your shopping list is empty. Add some ingredients above!</p>`;
                     }
                 }
             } catch (e) {
+                // Show an alert if the delete request fails unexpectedly
                 alert("Failed to remove item: " + e.message);
             }
         }
 
+        // Handle the add-item form submission
         document.getElementById("add-form").addEventListener("submit", async (e) => {
-            e.preventDefault();
-            const input = document.getElementById("item-input");
-            const name = input.value.trim();
-            if (!name) return;
+            e.preventDefault(); // Prevent the default full-page form submission
+            const input = document.getElementById("item-input"); // Cache the text input element
+            const name = input.value.trim(); // Read and trim the ingredient name
+            if (!name) return; // Do nothing if the input is blank after trimming
 
             try {
+                // POST the new item to the shopping list API
                 const res = await fetch("/api/shopping-list", {
                     method: "POST",
                     headers: {
-                        "Authorization": "Bearer " + currentToken,
-                        "Content-Type": "application/json"
+                        "Authorization": "Bearer " + currentToken, // Auth token for the user
+                        "Content-Type": "application/json"          // Sending a JSON body
                     },
-                    body: JSON.stringify({ name })
+                    body: JSON.stringify({ name }) // Send the item name as a JSON object
                 });
-                const item = await res.json();
-                input.value = "";
-                await loadItems();
+                const item = await res.json(); // Parse the created item returned by the API
+                input.value = "";              // Clear the input field after a successful add
+                await loadItems();             // Reload the full list so the new item appears
             } catch (e) {
+                // Show an alert if the add request fails unexpectedly
                 alert("Failed to add item: " + e.message);
             }
         });
 
+        // Run when Firebase resolves the auth state — redirects guests or initializes the page
         onAuthStateChanged(auth, async (user) => {
+            // Redirect unauthenticated visitors to the login page
             if (!user) {
                 window.location.href = "/login";
                 return;
             }
+            // Display the signed-in user's email in the nav bar
             document.getElementById("user-email").textContent = user.email;
+            // Sign out and redirect to login when the logout button is clicked
             document.getElementById("logout-btn").addEventListener("click", () => {
                 signOut(auth).then(() => window.location.href = "/login");
             });
+            // Force-refresh the token to ensure it is not expired, then store it
             currentToken = await user.getIdToken(true);
+            // Load and render the shopping list for this user
             await loadItems();
         });
     </script>

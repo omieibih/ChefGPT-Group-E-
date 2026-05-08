@@ -1,55 +1,81 @@
 <!DOCTYPE html>
+<!-- HTML5 document type declaration -->
 <html>
 <head>
+    <!-- Browser tab title for the home page -->
     <title>ChefGPT</title>
+    <!-- Shared stylesheet for consistent styling across all pages -->
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
+    <!-- Main content card container -->
     <div class="container">
+        <!-- Top navigation bar with links and the logged-in user info -->
         <nav class="page-nav">
+            <!-- Left side: navigation links to other pages -->
             <div class="page-nav__links">
+                <!-- Link to My Favorites using the warm (orange) color variant -->
                 <a href="/favorites" class="nav-link nav-link--warm">⭐ My Favorites</a>
+                <!-- Link to Shopping List using the cool (blue) color variant -->
                 <a href="/shopping-list" class="nav-link nav-link--cool">🛒 Shopping List</a>
             </div>
+            <!-- Right side: user email and logout button -->
             <div class="page-nav__user">
+                <!-- Placeholder for the signed-in user's email — populated by JavaScript -->
                 <span id="user-email" class="user-email-text"></span>
+                <!-- Logout button — signs the user out and redirects to /login -->
                 <button id="logout-btn" class="logout-btn">Log Out</button>
             </div>
         </nav>
 
+        <!-- Page heading with a chef emoji -->
         <h1>👨‍🍳 ChefGPT</h1>
+        <!-- Brief instruction telling the user what to do first -->
         <p>First, choose your cooking experience level.</p>
 
         <!-- Choose your experience level before inputting ingredients -->
+        <!-- This form POSTs to /ingredients, which renders the ingredient input page -->
         <form action="/ingredients" method="POST">
+            <!-- Label for the experience level dropdown, centered with the utility class -->
             <label for="experience_level" class="label-centered">🍳 What is your cooking experience level?</label>
+            <!-- Dropdown for selecting experience level — value is passed to the next page -->
             <select id="experience_level" name="experience_level" required>
+                <!-- Beginner is pre-selected as the most common starting point -->
                 <option value="Beginner" selected>Beginner</option>
+                <!-- Intermediate option for users with some cooking experience -->
                 <option value="Intermediate">Intermediate</option>
+                <!-- Advanced option for experienced cooks who want complex recipes -->
                 <option value="Advanced">Advanced</option>
             </select>
+            <!-- Submit button navigates to the ingredient input page -->
             <button type="submit">Next</button>
         </form>
     </div>
 
-    
-
+    <!-- Module script: handles auth gating and nav bar population -->
     <script type="module">
+        // Import the shared Firebase auth instance
         import { auth } from "/static/firebase-config.js";
+        // Import the auth state listener and sign-out function
         import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
+        // Watch for auth state changes — redirect guests or populate the nav bar
         onAuthStateChanged(auth, (user) => {
             if (!user) {
+                // Redirect unauthenticated visitors to the login page
                 window.location.href = "/login";
             } else {
+                // Display the signed-in user's email in the nav bar
                 document.getElementById("user-email").textContent = user.email;
             }
         });
 
+        // Sign out and redirect to login when the logout button is clicked
         document.getElementById("logout-btn").addEventListener("click", () => {
             signOut(auth).then(() => window.location.href = "/login");
         });
     </script>
+    <!-- Load the assistant script as a module — cache-busted with a version query string -->
     <script type="module" src="/static/assistant.js?v=8"></script>
 </body>
 </html>

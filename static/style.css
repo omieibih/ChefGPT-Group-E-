@@ -1,315 +1,359 @@
+/* ===== Base page styles ===== */
 body {
-    font-family: Arial, sans-serif;
-    background: #eef4fb;
-    text-align: center;
-    padding: 40px;
-    color: #16324f;
+    font-family: Arial, sans-serif; /* Clean, widely supported sans-serif font */
+    background: #eef4fb;            /* Light blue-grey page background */
+    text-align: center;             /* Center all inline content by default */
+    padding: 40px;                  /* Breathing room around the viewport edge */
+    color: #16324f;                 /* Dark navy default text color */
 }
 
+/* ===== Main content card ===== */
 .container {
-    background: #ffffff;
-    padding: 30px;
-    border-radius: 10px;
-    width: 500px;
-    margin: auto;
-    border: 1px solid #d4e3f5;
-    box-shadow: 0 10px 24px rgba(19, 61, 107, 0.1);
+    background: #ffffff;           /* White card surface contrasts with the page background */
+    padding: 30px;                 /* Inner spacing for card content */
+    border-radius: 10px;           /* Rounded corners for a modern card style */
+    width: 500px;                  /* Fixed width keeps forms readable */
+    margin: auto;                  /* Center the card horizontally on the page */
+    border: 1px solid #d4e3f5;    /* Subtle blue-tinted border to define the card edge */
+    box-shadow: 0 10px 24px rgba(19, 61, 107, 0.1); /* Soft drop shadow for depth */
 }
 
+/* ===== Form labels ===== */
 label {
-    display: block;
-    margin: 15px 0 5px;
-    font-weight: bold;
-    text-align: left;
-    color: #444;
+    display: block;         /* Stack labels above their inputs */
+    margin: 15px 0 5px;    /* Space above and a small gap below each label */
+    font-weight: bold;      /* Bold text visually distinguishes labels from inputs */
+    text-align: left;       /* Left-align labels inside the centered container */
+    color: #444;            /* Medium-dark grey, softer than the body text color */
 }
 
+/* ===== Text inputs ===== */
 input {
-    width: 90%;
-    padding: 10px;
-    margin: 5px 0;
-    border: 1px solid #ddd;
-    border-radius: 5px;
+    width: 90%;             /* Slightly narrower than the container for visual padding */
+    padding: 10px;          /* Comfortable tap target with text breathing room */
+    margin: 5px 0;          /* Small top and bottom gap between stacked inputs */
+    border: 1px solid #ddd; /* Light grey border for a clean, unobtrusive look */
+    border-radius: 5px;     /* Rounded corners matching the card style */
 }
 
+/* ===== Primary action buttons ===== */
 button {
-    margin-top: 15px;
-    padding: 10px 20px;
-    background: #1f6fb2;
-    border: none;
-    color: white;
-    cursor: pointer;
-    border-radius: 5px;
-    font-size: 16px;
+    margin-top: 15px;       /* Space above each button so it does not crowd inputs */
+    padding: 10px 20px;     /* Comfortable click/tap target */
+    background: #1f6fb2;   /* Brand blue background */
+    border: none;           /* Remove the default browser button border */
+    color: white;           /* White label text for contrast on the blue background */
+    cursor: pointer;        /* Pointer cursor signals the element is clickable */
+    border-radius: 5px;     /* Rounded corners matching the rest of the UI */
+    font-size: 16px;        /* Slightly larger than body text for emphasis */
 }
 
+/* ===== Button hover state ===== */
 button:hover {
-    background: #195f98;
+    background: #195f98; /* Darker blue gives tactile feedback on hover */
 }
 
+/* ===== Budget tag pill ===== */
 .budget-tag {
-    display: inline-block;
-    background: #e7f1fc;
-    color: #1a5c98;
-    border-radius: 20px;
-    padding: 4px 14px;
-    font-size: 14px;
-    margin-bottom: 20px;
+    display: inline-block;  /* Allow padding and border-radius on this inline element */
+    background: #e7f1fc;   /* Pale blue background distinguishes the tag from body text */
+    color: #1a5c98;        /* Medium blue text complementing the background */
+    border-radius: 20px;   /* Pill shape */
+    padding: 4px 14px;     /* Horizontal padding for the pill label */
+    font-size: 14px;       /* Slightly smaller than body to read as a supplemental tag */
+    margin-bottom: 20px;   /* Space below the tag before recipe cards begin */
 }
 
+/* ===== Recipe / favorite expandable card ===== */
 .meal-card {
-    background: #f7fbff;
-    border: 1px solid #d6e6f7;
-    border-radius: 10px;
-    margin: 15px 0;
-    text-align: left;
-    overflow: hidden;
+    background: #f7fbff;        /* Very light blue tint differentiates from the white container */
+    border: 1px solid #d6e6f7; /* Soft blue border matching the overall palette */
+    border-radius: 10px;        /* Rounded corners consistent with the container */
+    margin: 15px 0;             /* Vertical gap between stacked meal cards */
+    text-align: left;           /* Left-align recipe text inside the card */
+    overflow: hidden;           /* Clip rounded corners on child elements */
 }
 
+/* ===== Meal card summary (collapsed header) ===== */
 .meal-card summary {
-    padding: 16px 20px;
-    cursor: pointer;
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-    position: relative;
+    padding: 16px 20px;     /* Comfortable padding inside the clickable header area */
+    cursor: pointer;        /* Pointer cursor shows the header is interactive */
+    list-style: none;       /* Hide the default disclosure triangle from the <details> element */
+    display: flex;          /* Flex layout to stack name and description vertically */
+    flex-direction: column; /* Stack the name, description, and icon top-to-bottom */
+    position: relative;     /* Positioning context for the absolute dropdown icon */
 }
 
+/* ===== Remove the default WebKit details marker ===== */
 .meal-card summary::-webkit-details-marker {
-    display: none;
+    display: none; /* Hides the built-in WebKit arrow so the custom .dropdown-icon is shown instead */
 }
 
+/* ===== Recipe name inside the card header ===== */
 .meal-name {
-    font-size: 18px;
-    font-weight: bold;
-    color: #1f6fb2;
-    padding-right: 24px;
+    font-size: 18px;     /* Larger than body text to establish visual hierarchy */
+    font-weight: bold;   /* Bold for the primary recipe title */
+    color: #1f6fb2;     /* Brand blue makes recipe names stand out */
+    padding-right: 24px; /* Reserve space so the dropdown icon does not overlap the title */
 }
 
+/* ===== Short description below the recipe name ===== */
 .meal-desc {
-    font-size: 13px;
-    color: #777;
-    margin-top: 4px;
+    font-size: 13px;  /* Smaller than the name to read as secondary information */
+    color: #777;      /* Muted grey so the description does not compete with the title */
+    margin-top: 4px;  /* Small gap between the recipe name and its description */
 }
 
+/* ===== Dropdown toggle icon ===== */
 .dropdown-icon {
-    position: absolute;
-    right: 16px;
-    top: 16px;
-    font-size: 12px;
-    color: #1f6fb2;
-    transition: transform 0.2s;
+    position: absolute;         /* Position relative to the summary element */
+    right: 16px;                /* Pin to the right side of the header */
+    top: 16px;                  /* Align with the top padding of the header */
+    font-size: 12px;            /* Small arrow glyph */
+    color: #1f6fb2;            /* Brand blue matching the recipe name color */
+    transition: transform 0.2s; /* Smooth rotation animation when the card opens or closes */
 }
 
+/* ===== Rotate dropdown icon when the card is open ===== */
 .meal-card[open] .dropdown-icon {
-    transform: rotate(180deg);
+    transform: rotate(180deg); /* Point the arrow upward when the details element is expanded */
 }
 
+/* ===== Expanded card body ===== */
 .meal-body {
-    padding: 0 20px 20px;
-    border-top: 1px solid #d6e6f7;
+    padding: 0 20px 20px;          /* No top padding (border provides separation); generous bottom */
+    border-top: 1px solid #d6e6f7; /* Hairline divider between the header and the body */
 }
 
+/* ===== Content section inside a meal card (ingredients, instructions, etc.) ===== */
 .section {
-    margin-top: 16px;
+    margin-top: 16px; /* Vertical gap between consecutive sections within a card */
 }
 
+/* ===== Section heading (e.g., Ingredients, Instructions) ===== */
 .section h3 {
-    font-size: 15px;
-    color: #555;
-    margin-bottom: 8px;
+    font-size: 15px;    /* Slightly smaller than the meal name for sub-heading hierarchy */
+    color: #555;        /* Medium grey — readable but not as prominent as the recipe title */
+    margin-bottom: 8px; /* Space between the heading and its list */
 }
 
+/* ===== Lists inside sections ===== */
 .section ul, .section ol {
-    padding-left: 20px;
-    color: #333;
-    font-size: 14px;
-    line-height: 1.8;
+    padding-left: 20px; /* Indent list items from the section edge */
+    color: #333;        /* Dark grey for comfortable reading */
+    font-size: 14px;    /* Slightly smaller than base for dense recipe content */
+    line-height: 1.8;   /* Generous line height for multi-line list items */
 }
 
+/* ===== Back / navigation link ===== */
 .back-link {
-    display: inline-block;
-    margin-top: 25px;
-    color: #1f6fb2;
-    text-decoration: none;
-    font-weight: bold;
+    display: inline-block;  /* Allow margin and padding on this inline link */
+    margin-top: 25px;       /* Space above the link so it sits below all recipe cards */
+    color: #1f6fb2;        /* Brand blue for links */
+    text-decoration: none;  /* Remove underline for a cleaner default appearance */
+    font-weight: bold;      /* Bold makes the link easy to find at a glance */
 }
 
+/* ===== Back link hover state ===== */
 .back-link:hover {
-    text-decoration: underline;
+    text-decoration: underline; /* Restore underline on hover for clear interaction feedback */
 }
 
+/* ===== Top navigation bar ===== */
 .page-nav {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-bottom: 14px;
-    margin-bottom: 16px;
-    border-bottom: 1px solid #e4edf8;
-    gap: 10px;
+    display: flex;                     /* Flex row to place links and user section side by side */
+    justify-content: space-between;   /* Push nav links left and user info right */
+    align-items: center;              /* Vertically center all nav items */
+    padding-bottom: 14px;             /* Space below the nav before the page content */
+    margin-bottom: 16px;              /* Additional gap between the nav and the page heading */
+    border-bottom: 1px solid #e4edf8; /* Subtle separator line under the nav bar */
+    gap: 10px;                        /* Minimum gap between the link group and user group */
 }
 
+/* ===== Navigation link group (left side of the nav bar) ===== */
 .page-nav__links {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
+    display: flex;    /* Lay nav links out in a horizontal row */
+    gap: 8px;         /* Gap between individual nav link pills */
+    flex-wrap: wrap;  /* Allow links to wrap on small screens */
 }
 
+/* ===== Base nav link pill ===== */
 .nav-link {
-    font-size: 13px;
-    font-weight: 600;
-    text-decoration: none;
-    padding: 5px 11px;
-    border-radius: 6px;
-    transition: background 0.15s;
-    white-space: nowrap;
+    font-size: 13px;              /* Compact size appropriate for a navigation element */
+    font-weight: 600;             /* Semi-bold for legibility at small sizes */
+    text-decoration: none;        /* Remove underline */
+    padding: 5px 11px;            /* Small pill-style padding */
+    border-radius: 6px;           /* Pill-like rounded corners */
+    transition: background 0.15s; /* Fast background transition on hover */
+    white-space: nowrap;          /* Prevent the label from wrapping to a second line */
 }
 
+/* ===== Warm-toned nav link (e.g., My Favorites) ===== */
 .nav-link--warm {
-    color: #c96a1a;
-    background: #fff3e8;
+    color: #c96a1a;      /* Orange text for the warm variant */
+    background: #fff3e8; /* Light orange background */
 }
 
+/* ===== Warm nav link hover state ===== */
 .nav-link--warm:hover {
-    background: #ffe2c6;
+    background: #ffe2c6; /* Slightly deeper orange on hover */
 }
 
+/* ===== Cool-toned nav link (e.g., Shopping List) ===== */
 .nav-link--cool {
-    color: #1762a8;
-    background: #e8f2ff;
+    color: #1762a8;      /* Blue text for the cool variant */
+    background: #e8f2ff; /* Light blue background */
 }
 
+/* ===== Cool nav link hover state ===== */
 .nav-link--cool:hover {
-    background: #d0e5ff;
+    background: #d0e5ff; /* Slightly deeper blue on hover */
 }
 
+/* ===== User info section (right side of the nav bar) ===== */
 .page-nav__user {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-shrink: 0;
+    display: flex;       /* Horizontal row for the email text and logout button */
+    align-items: center; /* Vertically center the email and button */
+    gap: 8px;            /* Gap between the email text and the logout button */
+    flex-shrink: 0;      /* Prevent the user section from shrinking when nav links grow */
 }
 
+/* ===== Truncated user email display ===== */
 .user-email-text {
-    font-size: 12px;
-    color: #888;
-    max-width: 160px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    font-size: 12px;          /* Small so the email does not dominate the nav bar */
+    color: #888;              /* Muted grey — secondary information */
+    max-width: 160px;         /* Cap width to prevent long addresses from breaking layout */
+    overflow: hidden;         /* Clip text that exceeds the max-width */
+    text-overflow: ellipsis;  /* Show "..." when the email is truncated */
+    white-space: nowrap;      /* Keep the email on a single line */
 }
 
+/* ===== Logout button inside the nav bar ===== */
 .logout-btn {
-    margin-top: 0;
-    padding: 5px 12px;
-    font-size: 13px;
-    border-radius: 6px;
-    background: #1f6fb2;
-    white-space: nowrap;
+    margin-top: 0;       /* Override the default button top margin (not needed in the nav) */
+    padding: 5px 12px;   /* Compact padding matching the nav link pills */
+    font-size: 13px;     /* Match the nav link font size */
+    border-radius: 6px;  /* Rounded corners consistent with nav links */
+    background: #1f6fb2; /* Brand blue matching other primary buttons */
+    white-space: nowrap; /* Keep "Log Out" on one line */
 }
 
+/* ===== "Change experience level" link ===== */
 .change-level-link {
-    display: inline-block;
-    font-size: 13px;
-    color: #1f6fb2;
-    text-decoration: none;
-    margin-bottom: 16px;
-    opacity: 0.8;
+    display: inline-block; /* Allow margin and padding on this link */
+    font-size: 13px;       /* Slightly smaller than body to read as a secondary action */
+    color: #1f6fb2;       /* Brand blue link color */
+    text-decoration: none; /* No underline by default */
+    margin-bottom: 16px;  /* Space below before the ingredient form */
+    opacity: 0.8;          /* Slightly muted to signal it is a secondary action */
 }
 
+/* ===== Change level link hover state ===== */
 .change-level-link:hover {
-    text-decoration: underline;
-    opacity: 1;
+    text-decoration: underline; /* Underline on hover for clear interaction feedback */
+    opacity: 1;                 /* Full opacity on hover to indicate focus */
 }
 
+/* ===== Centered label utility class ===== */
 .label-centered {
-    text-align: center;
+    text-align: center; /* Override the left-align default for labels that need centering */
 }
 
+/* ===== Inline error message ===== */
 .error {
-    color: #b42318;
-    font-size: 14px;
+    color: #b42318;   /* Red text to signal an error state */
+    font-size: 14px;  /* Slightly smaller than body text */
 }
 
+/* ===== Floating assistant toggle button ===== */
 .assistant-toggle {
-    position: fixed;
-    right: 18px;
-    bottom: 18px;
-    width: 54px;
-    height: 54px;
-    border-radius: 50%;
-    font-size: 26px;
-    line-height: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-    margin-top: 0;
-    background: #1f6fb2;
-    border: 1px solid #1a5c98;
-    box-shadow: 0 8px 18px rgba(19, 61, 107, 0.28);
-    z-index: 1000;
+    position: fixed;   /* Always visible in the bottom-right corner regardless of scroll */
+    right: 18px;       /* Distance from the right viewport edge */
+    bottom: 18px;      /* Distance from the bottom viewport edge */
+    width: 54px;       /* Fixed square dimension to form a circle with border-radius: 50% */
+    height: 54px;      /* Same as width so the element is a perfect square */
+    border-radius: 50%; /* Round the square into a circle */
+    font-size: 26px;   /* Large emoji icon size */
+    line-height: 1;    /* Prevent extra line height from miscentering the icon */
+    display: flex;     /* Flex layout for icon centering */
+    align-items: center;      /* Center icon vertically */
+    justify-content: center;  /* Center icon horizontally */
+    padding: 0;        /* No padding — centering is handled by flex */
+    margin-top: 0;     /* Override the default button top margin */
+    background: #1f6fb2;        /* Brand blue background */
+    border: 1px solid #1a5c98;  /* Slightly darker border for subtle definition */
+    box-shadow: 0 8px 18px rgba(19, 61, 107, 0.28); /* Elevated shadow so the button appears to float */
+    z-index: 1000;     /* Render above all page content */
 }
 
+/* ===== Assistant toggle button hover state ===== */
 .assistant-toggle:hover {
-    background: #195f98;
+    background: #195f98; /* Darker blue on hover for interaction feedback */
 }
 
+/* ===== Floating assistant suggestion panel ===== */
 .assistant-panel {
-    position: fixed;
-    right: 18px;
-    bottom: 82px;
-    width: 260px;
-    padding: 12px;
-    background: #fff;
-    border: 1px solid #cddff3;
-    border-radius: 12px;
-    display: none;
-    z-index: 1001;
-    text-align: left;
-    box-shadow: 0 10px 24px rgba(19, 61, 107, 0.14);
+    position: fixed;        /* Anchored above the toggle button regardless of scroll */
+    right: 18px;            /* Right edge aligned with the toggle button */
+    bottom: 82px;           /* Positioned above the toggle button (54px height + 18px gap + spacing) */
+    width: 260px;           /* Wide enough for readable chip labels */
+    padding: 12px;          /* Inner spacing for the panel content */
+    background: #fff;       /* White card surface */
+    border: 1px solid #cddff3; /* Light blue border */
+    border-radius: 12px;    /* Rounded card corners */
+    display: none;          /* Hidden by default; the .open class changes this to block */
+    z-index: 1001;          /* One layer above the toggle button so it renders on top */
+    text-align: left;       /* Left-align chip labels and message text */
+    box-shadow: 0 10px 24px rgba(19, 61, 107, 0.14); /* Soft shadow for depth */
 }
 
+/* ===== Assistant panel open state ===== */
 .assistant-panel.open {
-    display: block;
+    display: block; /* Show the panel when JavaScript adds the .open class */
 }
 
+/* ===== Status message inside the assistant panel ===== */
 .assistant-message {
-    margin: 8px 0 10px;
-    font-size: 14px;
-    color: #1b4166;
+    margin: 8px 0 10px; /* Small top margin; larger bottom margin before the chips */
+    font-size: 14px;    /* Readable but compact */
+    color: #1b4166;     /* Dark navy, slightly lighter than body text */
 }
 
+/* ===== "I'm Feeling Lucky" button ===== */
 .assistant-lucky {
-    margin-top: 0;
-    margin-bottom: 10px;
-    padding: 8px 10px;
-    width: 100%;
-    font-size: 14px;
+    margin-top: 0;       /* No extra top margin — sits directly below the message */
+    margin-bottom: 10px; /* Gap between this button and the chip row below */
+    padding: 8px 10px;   /* Comfortable padding */
+    width: 100%;         /* Full panel width for easy tapping on mobile */
+    font-size: 14px;     /* Match the assistant message text size */
 }
 
+/* ===== Ingredient chip container ===== */
 .assistant-chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
+    display: flex;   /* Lay chips out in a horizontal flow */
+    flex-wrap: wrap; /* Allow chips to wrap to the next row when they overflow */
+    gap: 8px;        /* Consistent gap between chip buttons */
 }
 
+/* ===== Individual ingredient chip button ===== */
 .assistant-chip {
-    border: none;
-    background: #1f6fb2;
-    color: white;
-    padding: 6px 10px;
-    border-radius: 999px;
-    font-size: 13px;
-    cursor: pointer;
+    border: none;          /* No border — color fills define the button boundary */
+    background: #1f6fb2;  /* Brand blue background */
+    color: white;          /* White label for contrast */
+    padding: 6px 10px;     /* Compact horizontal padding inside the pill */
+    border-radius: 999px;  /* Fully rounded pill shape */
+    font-size: 13px;       /* Slightly smaller than body text */
+    cursor: pointer;       /* Pointer cursor signals interactivity */
 }
 
+/* ===== Chip hover state ===== */
 .assistant-chip:hover {
-    background: #195f98;
+    background: #195f98; /* Darker blue on hover for interaction feedback */
 }
 
+/* ===== Responsive adjustments for narrow screens ===== */
 @media (max-width: 768px) {
     .assistant-panel {
-        width: 220px;
+        width: 220px; /* Reduce panel width on small screens to avoid viewport overflow */
     }
 }

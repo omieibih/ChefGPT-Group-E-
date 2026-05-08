@@ -1,75 +1,110 @@
 <!DOCTYPE html>
+<!-- HTML5 document type declaration -->
 <html>
 <head>
+    <!-- Browser tab title for the ingredient input page -->
     <title>ChefGPT Ingredients</title>
+    <!-- Shared stylesheet for consistent styling across all pages -->
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
+    <!-- Main content card container -->
     <div class="container">
+        <!-- Top navigation bar with links and the logged-in user info -->
         <nav class="page-nav">
+            <!-- Left side: navigation links to other pages -->
             <div class="page-nav__links">
+                <!-- Link to My Favorites using the warm (orange) color variant -->
                 <a href="/favorites" class="nav-link nav-link--warm">⭐ My Favorites</a>
+                <!-- Link to Shopping List using the cool (blue) color variant -->
                 <a href="/shopping-list" class="nav-link nav-link--cool">🛒 Shopping List</a>
             </div>
+            <!-- Right side: user email and logout button -->
             <div class="page-nav__user">
+                <!-- Placeholder for the signed-in user's email — populated by JavaScript -->
                 <span id="user-email" class="user-email-text"></span>
+                <!-- Logout button — signs the user out and redirects to /login -->
                 <button id="logout-btn" class="logout-btn">Log Out</button>
             </div>
         </nav>
 
+        <!-- Page heading with a chef emoji -->
         <h1>👨‍🍳 ChefGPT</h1>
+        <!-- Instruction paragraph shows the experience level selected on the previous page -->
         <p>
             Now enter your ingredients. Your selected level is:
+            <!-- Jinja2 template variable: the experience level chosen on the home page -->
             <strong>{{ experience_level }}</strong>
         </p>
+        <!-- Link to go back and change the experience level before continuing -->
         <a href="/" class="change-level-link">↩ Change experience level</a>
 
+        <!-- Form that POSTs to /results with ingredients and optional filters -->
         <form action="/results" method="POST">
+            <!-- Pass the experience level through as a hidden field so it reaches the results page -->
             <input type="hidden" name="experience_level" value="{{ experience_level }}">
 
+            <!-- Label for the ingredients text input -->
             <label for="ingredients">🥦 What ingredients do you have?</label>
+            <!-- Comma-separated ingredient input — required before the form can be submitted -->
             <input type="text" id="ingredients" name="ingredients" placeholder="e.g. chicken, rice, broccoli" required>
 
+            <!-- Label for the optional budget input -->
             <label for="budget">💰 What's your budget for extra ingredients? (optional)</label>
+            <!-- Optional numeric budget field — min="0" prevents negative values -->
             <input type="number" id="budget" name="budget" placeholder="e.g. 20" min="0" step="0.01">
 
+            <!-- Label for the optional dietary filter input -->
             <label for="dietary_filter">🥗 Dietary Filter</label>
-            <input 
-                 type="text" 
-                id="dietary_filter" 
-                 name="dietary_filter" 
+            <!-- Optional free-text dietary restriction field -->
+            <input
+                 type="text"
+                id="dietary_filter"
+                 name="dietary_filter"
                  placeholder="e.g. vegan, vegetarian, gluten-free, dairy-free, nut-free">
 
-
-            
+            <!-- Submit button sends the form data to the /results route -->
             <button type="submit">Generate Recipes</button>
         </form>
     </div>
 
     <!-- Simple floating assistant bubble and card. -->
+    <!-- Toggle button that opens and closes the assistant panel -->
     <button id="assistant-toggle" class="assistant-toggle" aria-label="Open ingredient assistant">🤔</button>
+    <!-- The assistant panel — hidden by default; shown when the toggle is clicked -->
     <div id="assistant-panel" class="assistant-panel" aria-hidden="true">
+        <!-- Status message updated by assistant.js based on current state -->
         <p id="assistant-message" class="assistant-message">Open for a quick suggestion.</p>
+        <!-- "I'm Feeling Lucky" button shows random ingredient chips without waiting for backend data -->
         <button id="assistant-lucky" class="assistant-lucky" type="button">I'm Feeling Lucky</button>
+        <!-- Container for dynamically rendered ingredient chip buttons -->
         <div id="assistant-chips" class="assistant-chips"></div>
     </div>
 
+    <!-- Module script: handles auth gating and nav bar population -->
     <script type="module">
+        // Import the shared Firebase auth instance
         import { auth } from "/static/firebase-config.js";
+        // Import the auth state listener and sign-out function
         import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
+        // Watch for auth state changes — redirect guests or populate the nav bar
         onAuthStateChanged(auth, (user) => {
             if (!user) {
+                // Redirect unauthenticated visitors to the login page
                 window.location.href = "/login";
             } else {
+                // Display the signed-in user's email in the nav bar
                 document.getElementById("user-email").textContent = user.email;
             }
         });
 
+        // Sign out and redirect to login when the logout button is clicked
         document.getElementById("logout-btn").addEventListener("click", () => {
             signOut(auth).then(() => window.location.href = "/login");
         });
     </script>
+    <!-- Load the assistant script as a module — cache-busted with a version query string -->
     <script type="module" src="/static/assistant.js?v=8"></script>
 </body>
 </html>
