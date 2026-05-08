@@ -1,533 +1,352 @@
 ================================================================================
-  CHEFGPT — PROJECT OVERVIEW
+  CHEFGPT - PROJECT OVERVIEW
   CS3203 Group E
+  Spring 2026
 ================================================================================
 
 
 ================================================================================
-  SECTION 1: FILE-BY-FILE DESCRIPTIONS
+  SECTION 1: WHAT EVERY FILE DOES
 ================================================================================
 
---------------------------------------------------------------------------------
-  ROOT
---------------------------------------------------------------------------------
+--- ROOT FILES ---
 
 app.py
-  The application entry point. Creates the Flask app instance, loads environment
-  variables from .env using python-dotenv, imports backend/Core/firebase_init.py
-  as a side effect (so Firebase initializes exactly once before any blueprint
-  uses it), then loops over all_blueprints from backend/Components/__init__.py
-  and registers each one with the Flask app. Also contains three in-memory mock
-  functions (get_recipes, get_ingredients, get_nutrition, save_recipe,
-  get_favorites_local, remove_recipe) that are used exclusively by the unit test
-  files so tests can run without a real API key or Firebase connection.
+    This is the main file that starts the whole app. It loads the secret keys
+    from the .env file, sets up the Firebase connection, and registers all the
+    different pages and features. It also has a few simple helper functions
+    (like save_recipe and get_nutrition) that the test files use so tests don't
+    need a real internet connection to run.
 
 requirements.txt
-  Lists every Python package the project depends on: Flask (web framework),
-  Groq (API client for the LLaMA AI model), firebase-admin (server-side Firebase
-  SDK), python-dotenv (loads .env files), gunicorn (production WSGI server),
-  Jinja2, Werkzeug, and pytest. Any developer can run "pip install -r
-  requirements.txt" to get a working environment.
+    A list of all the Python libraries the project needs. Running
+    "pip install -r requirements.txt" installs everything at once.
 
 .env
-  A local-only file (not committed to Git) that stores secret keys: GROQ_API_KEY
-  for the AI recipe API, EDAMAM_APP_ID and EDAMAM_APP_KEY for the nutrition API,
-  and FIREBASE_SERVICE_ACCOUNT_JSON or FIREBASE_SERVICE_ACCOUNT_PATH for the
-  Firebase Admin SDK credentials.
+    A file that stores secret keys like the Groq API key and Firebase credentials.
+    It is NOT uploaded to GitHub because it contains sensitive information.
 
 .gitignore
-  Tells Git which files and folders to never commit: .env (secrets), the .venv
-  and venv virtual environment folders, __pycache__ directories, and the
-  serviceAccountKey.json Firebase credentials file.
+    Tells Git which files to ignore and not upload. Mainly used to keep .env
+    and the virtual environment folder off of GitHub.
 
 README.md
-  Project documentation for anyone cloning the repo: describes what ChefGPT is,
-  lists features, explains how to set up the environment, run the app, and run
-  the test suite.
+    A description of the project, how to set it up, and how to run it.
 
 
---------------------------------------------------------------------------------
-  backend/Core/
---------------------------------------------------------------------------------
+--- backend/Core/ ---
 
 backend/Core/firebase_init.py
-  Bootstraps the Firebase Admin SDK exactly once at import time. Tries to load
-  credentials first from the FIREBASE_SERVICE_ACCOUNT_JSON environment variable
-  (a JSON string, used in CI/CD), then falls back to a local file path
-  (FIREBASE_SERVICE_ACCOUNT_PATH). If initialization fails for any reason, it
-  sets FIREBASE_AVAILABLE = False and captures the error in FIREBASE_INIT_ERROR
-  rather than crashing. Every API route that touches Firebase checks these two
-  flags before proceeding.
+    Connects to Firebase when the app first starts. If it can't connect
+    (for example, if the credentials are wrong), it sets a flag saying Firebase
+    is unavailable instead of crashing the whole app.
 
 backend/Core/auth_helper.py
-  Contains a single function: get_current_user(request). It reads the
-  Authorization header, extracts the Bearer token, and calls
-  firebase_auth.verify_id_token() to cryptographically verify the JWT against
-  Google's public keys. Returns the decoded user object on success, or None if
-  the header is missing, malformed, or the token is invalid. Every protected API
-  route calls this function to identify the requesting user.
+    A small helper that checks if a user is logged in on any API request.
+    It reads the login token the browser sends, asks Firebase to verify it,
+    and returns the user's info if valid. If the token is missing or invalid,
+    it returns nothing so the route can send back a "not logged in" error.
 
 backend/Core/__init__.py
-  Empty file that marks the Core folder as a Python package so its modules can
-  be imported with the "backend.Core" prefix.
+    An empty file that just tells Python this folder is a package.
 
 
---------------------------------------------------------------------------------
-  backend/Components/
---------------------------------------------------------------------------------
+--- backend/Components/ ---
 
 backend/Components/__init__.py
-  Imports the Blueprint from every feature module and assembles them into a
-  single list called all_blueprints. app.py imports and registers this list,
-  meaning adding a new feature only requires writing one new file and adding one
-  import here.
+    Collects all the feature blueprints into one list so app.py can register
+    them all in one place.
 
 backend/Components/pages.py
-  Handles the three basic HTML page routes that have no business logic:
-    GET  /           — serves templates/index.html (experience level selection)
-    POST /ingredients — reads the submitted experience level and serves
-                        templates/ingredients.html with it injected as a variable
-    GET  /login      — serves templates/login.html
-  Authentication on these pages is handled entirely by client-side JavaScript.
+    Handles the basic page navigation. When you go to the home page it shows
+    the experience level form. When you submit that form it loads the ingredients
+    page. When you go to /login it shows the login page. No business logic here,
+    just routing.
 
 backend/Components/recipes.py
-  The core feature of ChefGPT. Contains get_recipes(), which builds a
-  natural-language prompt from the user's ingredients, budget, experience level,
-  and dietary filter, sends it to LLaMA 3.3 70B via the Groq API, and parses the
-  raw JSON array that comes back. The Flask route POST /results reads the form
-  submission, calls get_recipes(), and renders templates/results.html with the
-  three generated meal objects. If the AI call fails, the route catches the
-  exception and renders the page with an error message instead of crashing.
+    The most important file in the project. When the user submits their
+    ingredients, this file builds a prompt and sends it to the LLaMA AI model
+    through the Groq API. The AI sends back a list of 3 recipes as JSON, which
+    this file parses and sends to the results page to display. If anything goes
+    wrong with the AI call, it catches the error and shows a message to the user
+    instead of crashing.
 
 backend/Components/favorites.py
-  Implements the Favorites feature. Provides three database helper functions
-  (save_favorite, get_favorites, delete_favorite) that interact with the
-  "favorites" Firestore collection. delete_favorite verifies document ownership
-  before deleting (uid comparison) to prevent a user from deleting another user's
-  data. Exposes three authenticated API routes:
-    POST   /api/favorites           — saves a recipe
-    GET    /api/favorites           — returns all favorites for the current user
-    DELETE /api/favorites/<doc_id>  — removes a specific favorite
-  Also serves GET /favorites which renders templates/favorites.html.
+    Lets users save recipes they like. When a user clicks "Save Recipe" on the
+    results page, this file stores the recipe in Firebase under their account.
+    Users can also view all their saved recipes and delete ones they don't want
+    anymore. Before deleting, it checks that the recipe actually belongs to the
+    user requesting the delete.
 
 backend/Components/shopping_list.py
-  Implements the Shopping List feature. Stores items in a sub-collection under
-  each user's Firestore document (users/{uid}/shopping_list). Exposes three
-  authenticated API routes:
-    GET    /api/shopping-list         — returns all items for the current user
-    POST   /api/shopping-list         — adds a new item (name, completed: false)
-    DELETE /api/shopping-list/<doc_id> — deletes a specific item
-  Also serves GET /shopping-list which renders templates/shopping_list.html.
-  Because items live under the user's own document, Firestore's data structure
-  enforces isolation — a user can only ever read or write their own sub-collection.
+    Lets users keep a shopping list. Users can add ingredients, check them off,
+    and remove them. Everything is saved in Firebase under the user's account so
+    it persists between sessions.
 
 backend/Components/nutrition.py
-  Fetches nutrition data for a given food string from the Edamam Nutrition API.
-  Exposes GET /nutrition?food=<query>. Returns calories, protein, fat, and carbs
-  as a JSON object. If the API keys are not set or the request fails, returns a
-  JSON error object. Called by the inline script in templates/results.html to
-  append a nutrition section to each meal card after the page loads.
+    Fetches nutrition info (calories, protein, fat, carbs) for a meal by calling
+    the Edamam Nutrition API. This gets called automatically on the results page
+    to add a nutrition section to each recipe card.
 
 backend/Components/experience_level.py
-  Persists the user's preferred cooking experience level to their Firestore user
-  document (users/{uid}). Exposes two authenticated API routes:
-    POST /api/experience-level — saves the level; validates it is one of
-                                 "Beginner", "Intermediate", or "Advanced"
-    GET  /api/experience-level — returns the saved level (defaults to "Beginner")
+    Saves and retrieves the user's preferred cooking experience level from
+    Firebase. This way the app can remember the user's level between sessions
+    if needed.
 
 backend/Components/ingredient_suggestions.py
-  Powers the floating assistant panel on the ingredients page. Contains pure
-  helper functions (_extract_ingredients, _title_based_ingredients,
-  generate_ingredient_suggestions) that parse the user's saved favorites and
-  produce a short list of ingredient suggestions without any AI calls. Uses a
-  small keyword-based TITLE_HINTS table to augment suggestions based on recipe
-  name. Falls back to DEFAULT_INGREDIENTS when the user has no favorites yet.
-  Exposes one authenticated API route: GET /api/ingredient-suggestions.
+    Powers the floating assistant bubble on the ingredients page. It looks at
+    the user's saved favorite recipes and suggests ingredients they might want
+    to add based on what they've liked before. If the user has no favorites yet,
+    it falls back to a small list of common ingredients. It also has an "I'm
+    Feeling Lucky" mode that gives random suggestions.
 
 backend/Components/dietary_filters.py
-  Contains a single pure utility function: filter_recipes_by_diet(recipes,
-  dietary_filter). Accepts a list of recipe dicts and a dietary filter string,
-  validates that the filter is one of the known values (vegan, vegetarian,
-  gluten-free, dairy-free, nut-free), and returns only recipes whose
-  dietary_tags list includes the filter. Used in unit tests to verify the
-  filtering logic; in production the dietary filter is passed directly into the
-  AI prompt in recipes.py.
+    A utility function that filters a list of recipes down to only the ones
+    that match a dietary restriction (like vegan or gluten-free). It checks each
+    recipe's dietary_tags list and returns only the ones that match. Mainly used
+    in the unit tests.
 
 
---------------------------------------------------------------------------------
-  static/
---------------------------------------------------------------------------------
+--- static/ ---
 
 static/firebase-config.js
-  Initializes the Firebase client SDK using the project's public configuration
-  object (API key, project ID, etc.). Exports two instances: "auth" (Firebase
-  Authentication) and "db" (Firestore). Every other frontend JS file imports from
-  this module so there is exactly one initialization point.
+    Sets up the Firebase connection on the browser side. It exports an "auth"
+    object and a "db" object that all the other JavaScript files import and use.
 
 static/auth.js
-  Handles the login page UI. Imports Firebase auth functions and wires up three
-  buttons: Log In (signInWithEmailAndPassword), Create Account
-  (createUserWithEmailAndPassword), and Sign in with Google (signInWithPopup with
-  GoogleAuthProvider). Also uses onAuthStateChanged to redirect any already-
-  logged-in user directly to the home page. Shows Firebase error messages in the
-  error div on failure.
+    Handles everything on the login page. It connects the Log In, Create Account,
+    and Sign In with Google buttons to Firebase. If login fails it shows the
+    error message from Firebase. If the user is already logged in it redirects
+    them to the home page.
 
 static/assistant.js
-  Powers the floating ingredient assistant panel shown on the ingredients page.
-  Handles opening/closing the panel, fetching personalized suggestions from
-  /api/ingredient-suggestions (sending the user's Firebase ID token in the
-  Authorization header), rendering suggestions as clickable chip buttons,
-  deduplicating ingredient additions to the input field, and the "I'm Feeling
-  Lucky" random ingredient mode. Closes the panel on outside clicks. No page
-  logic lives here — it only manages the assistant UI and communicates with the
-  backend.
+    Controls the floating assistant panel on the ingredients page. It handles
+    opening and closing the panel, fetching personalized ingredient suggestions
+    from the backend (sending the user's login token so the server knows who
+    to suggest for), turning suggestions into clickable buttons, and adding
+    clicked ingredients into the input field without duplicates.
 
 static/style.css
-  The single shared stylesheet for the entire application. Styles the body, the
-  white container card, form labels, inputs, buttons, meal cards (the expandable
-  <details> elements), the top navigation bar, the user email display, the
-  floating assistant button and panel, ingredient chip pills, and responsive
-  adjustments for screens under 768px wide.
+    The stylesheet for the whole app. Controls colors, fonts, button styles,
+    the recipe cards, the nav bar, the floating assistant button, and how things
+    look on smaller screens.
 
 
---------------------------------------------------------------------------------
-  templates/
---------------------------------------------------------------------------------
+--- templates/ ---
 
 templates/login.html
-  The login page. Contains three buttons (Log In, Create Account, Sign in with
-  Google) and two inputs (email, password). Loads static/auth.js as a module to
-  handle all authentication logic. Shows an error div that auth.js populates on
-  failure.
+    The login page. Has email and password inputs plus buttons for logging in,
+    creating an account, and signing in with Google. Loads auth.js to handle
+    all the actual login logic.
 
 templates/index.html
-  The home page. Shows a dropdown for selecting the cooking experience level
-  (Beginner, Intermediate, Advanced) and a Next button that POSTs to /ingredients.
-  The inline script uses onAuthStateChanged to redirect guests to /login and
-  displays the user's email in the nav bar for authenticated users. Loads
-  assistant.js (though the assistant panel is not rendered here).
+    The home page. Shows a dropdown to pick your cooking experience level
+    (Beginner, Intermediate, or Advanced) and a Next button. Redirects to
+    the login page if the user isn't signed in.
 
 templates/ingredients.html
-  The ingredient input page. Shows the experience level selected on the previous
-  page, and a form with fields for ingredients (required), budget (optional,
-  numeric), and dietary filter (optional, free text). POSTs to /results. Also
-  contains the floating assistant button and panel HTML that assistant.js
-  activates. The inline script handles auth gating and nav bar population.
+    The ingredient input page. Shows the experience level the user picked,
+    and has fields for entering ingredients, an optional budget, and an optional
+    dietary filter. Also has the floating assistant bubble HTML that assistant.js
+    controls.
 
 templates/results.html
-  The recipe results page. Uses Jinja2 to loop over the meals list returned by
-  recipes.py and render each one as an expandable <details> card showing the
-  recipe name, description, core ingredients, additional ingredients to buy, and
-  step-by-step instructions. Each card has a "Save Recipe" button. An inline
-  module script wires up save buttons to POST to /api/favorites using the user's
-  Firebase token. A second inline script fetches nutrition data from /nutrition
-  for each meal card and appends a nutrition section. Includes a "Try again" form
-  that posts back to /ingredients with the experience level preserved.
+    The results page. Uses a Jinja2 loop to display each of the 3 recipes the
+    AI generated as expandable cards. Each card shows the recipe name, description,
+    ingredients you have, ingredients to buy, and step-by-step instructions.
+    There's a "Save Recipe" button on each card. After the page loads, a script
+    also fetches and appends nutrition info to each card.
 
 templates/favorites.html
-  The saved favorites page. Dynamically loads the user's favorites from
-  /api/favorites using a Firebase ID token, then renders them as expandable meal
-  cards with ingredients and instructions. Each card has a "Remove from Favorites"
-  button that sends a DELETE request to /api/favorites/<doc_id>. Handles loading
-  states, empty states, and error states. Redirects guests to /login.
+    The My Favorites page. When it loads, JavaScript fetches all the user's saved
+    recipes from the backend and displays them as expandable cards. Each card has
+    a Remove button. Shows a loading message while fetching and an empty state
+    message if no favorites have been saved yet.
 
 templates/shopping_list.html
-  The shopping list page. Fetches and renders the user's shopping items from
-  /api/shopping-list. Items show a checkbox, name, and Remove button. A form at
-  the top allows adding new items via POST. Completed items are styled with a
-  strikethrough. Handles loading, empty, and error states. Redirects guests to
-  /login.
+    The Shopping List page. Loads the user's saved items from the backend and
+    shows them as a list with checkboxes and remove buttons. Has a form at the
+    top to add new items.
 
 
---------------------------------------------------------------------------------
-  tests/
---------------------------------------------------------------------------------
+--- tests/ ---
 
 tests/test_app.py
-  The main unit and integration test file. Tests route behavior (home page
-  returns 200, /results requires POST), mocks the Groq client to test
-  get_recipes() without a real API key, and verifies the structure of returned
-  meals (three meals, required fields present, instructions is a list). Also
-  tests that the /results page renders an error message when the API call throws
-  an exception, and that get_recipes raises an error when the API returns invalid
-  JSON.
+    The main test file. Tests that pages load correctly, that the /results route
+    only accepts POST requests, and that get_recipes() returns the right structure.
+    It mocks the Groq API so tests run without a real API key. Also tests that
+    the results page shows an error message when the AI call fails.
 
 tests/test_dietary_filters.py
-  Unit tests for the filter_recipes_by_diet() function in dietary_filters.py.
-  Tests that a valid filter returns only matching recipes, an unrecognized filter
-  returns an empty list, and empty/None inputs return empty lists gracefully.
+    Tests the dietary filter function. Makes sure it returns only recipes that
+    match the filter, returns empty for unrecognized filters, and handles empty
+    or None input without crashing.
 
 tests/test_experience_level.py
-  Integration tests for the experience level flow using the Flask test client.
-  Tests that the /ingredients page correctly receives and displays the submitted
-  experience level, that /results passes the level to get_recipes(), and that
-  /results defaults to "Beginner" when no experience level is submitted (the
-  reliability fallback test).
+    Tests that the experience level is correctly passed from the home page through
+    to the recipe generation call. Also tests that the backend defaults to
+    "Beginner" if no experience level is submitted.
 
 tests/test_IngredientSuggestion.py
-  Unit tests for two things: (1) the in-memory get_ingredients() mock in app.py,
-  which tests keyword-based routing (high protein, cheap, vegan, empty input,
-  unknown input, case insensitivity); and (2) the real
-  generate_ingredient_suggestions() function, which tests ingredient parsing and
-  deduplication, title-based hint expansion, and the fallback behavior when the
-  user has no favorites.
+    Tests the ingredient suggestion system. Tests the basic keyword-matching mock
+    (high protein, cheap, vegan, etc.) and also tests the real suggestion
+    algorithm to make sure it parses ingredients correctly, adds title-based hints,
+    and falls back to defaults when there are no favorites.
 
 tests/test_nutrition.py
-  Unit tests for the in-memory get_nutrition() mock in app.py. Tests that a known
-  food returns a dict with all four keys (calories, protein, carbs, fat), that
-  values are non-negative, that empty input returns a prompt string, that an
-  unknown food returns a "not found" string, and that lookups are case-insensitive.
+    Tests the nutrition mock function in app.py. Makes sure it returns the right
+    keys, that values are non-negative, that empty input returns an error message,
+    and that lookups work regardless of letter case.
 
 tests/test_SaveRecipeToFavorites.py
-  Unit tests for the in-memory save_recipe(), get_favorites_local(), and
-  remove_recipe() functions in app.py. Uses a pytest autouse fixture to clear the
-  in-memory list before each test. Tests valid save, appearance in favorites list,
-  saving multiple recipes, empty-name edge case, duplicate prevention (a recipe
-  saved twice appears only once), and removal.
+    Tests saving and removing favorites using the in-memory mock functions in
+    app.py. Tests saving a recipe, checking it shows up in the list, saving
+    multiple recipes, preventing duplicates, and removing a recipe.
 
 
---------------------------------------------------------------------------------
-  .github/
---------------------------------------------------------------------------------
+--- .github/ ---
 
 .github/workflows/main.yml
-  The GitHub Actions CI/CD pipeline. Triggers on every push to main. Runs two
-  jobs: (1) build_and_test: checks out the repo, sets up Python 3.11, fixes any
-  UTF-16 encoding issues in requirements.txt, installs dependencies, compiles
-  app.py to catch syntax errors, and runs the full pytest suite. Then builds a
-  static site artifact from the templates and static folders for GitHub Pages
-  deployment. (2) deploy_pages: runs after build_and_test succeeds and deploys
-  the built artifact to GitHub Pages.
+    The automated CI/CD pipeline on GitHub. Every time code is pushed to main,
+    it automatically installs dependencies, runs all the tests, and if they pass,
+    deploys a static preview to GitHub Pages.
 
 
---------------------------------------------------------------------------------
-  .vscode/
---------------------------------------------------------------------------------
+--- .vscode/ ---
 
 .vscode/tasks.json
-  Defines a VS Code task called "pytest-ingredient-suggestions" that runs
-  pytest on tests/test_IngredientSuggestion.py. Lets developers run that
-  specific test file from the VS Code Tasks menu without typing the command
-  manually.
+    A VS Code shortcut that lets you run just the ingredient suggestion tests
+    from the VS Code Tasks menu without typing the command manually.
 
 
 ================================================================================
-  SECTION 2: COMPLEXITY, SECURITY, RELIABILITY, AND ARCHITECTURE ANALYSIS
+  SECTION 2: COMPLEXITY, SECURITY, RELIABILITY, AND ARCHITECTURE
 ================================================================================
 
---------------------------------------------------------------------------------
-  ARCHITECTURE
---------------------------------------------------------------------------------
+--- ARCHITECTURE ---
 
-ChefGPT is a Flask web application organized into three clear layers:
+The project is organized into three main layers:
 
-  1. ENTRY POINT — app.py bootstraps the app: loads .env, initializes Firebase,
-     registers all feature blueprints, and starts the server.
+  1. The entry point (app.py) starts everything up.
 
-  2. BACKEND — two sub-layers:
-       backend/Core/    — shared infrastructure used by all features:
-                          firebase_init.py (one-time SDK setup) and
-                          auth_helper.py (token verification).
-       backend/Components/ — one Blueprint per feature (recipes, favorites,
-                          shopping_list, nutrition, experience_level,
-                          ingredient_suggestions, pages). Each module is
-                          self-contained with its own routes and database helpers.
+  2. The backend has two parts:
+       - backend/Core/ handles shared stuff that every feature needs:
+         connecting to Firebase and checking if users are logged in.
+       - backend/Components/ has one file per feature (recipes, favorites,
+         shopping list, etc.). Each file handles its own routes and database work.
 
-  3. FRONTEND — static JS modules and Jinja2 templates communicate with the
-     backend exclusively through REST API calls. The browser-side Firebase SDK
-     handles identity; the server-side Firebase Admin SDK verifies it.
+  3. The frontend (static JS files and HTML templates) talks to the backend
+     through API calls. The browser handles login with Firebase, and the server
+     double-checks that login before doing anything with user data.
 
-External services:
-  - Groq API (LLaMA 3.3 70B) — recipe generation
-  - Firebase Authentication   — user identity (client + server)
-  - Google Firestore          — persistent user data (favorites, shopping list,
-                                experience level)
-  - Edamam Nutrition API      — per-meal nutrition data
+The app uses three outside services:
+  - Groq API (LLaMA AI) to generate recipes
+  - Firebase for user login and storing data (Firestore database)
+  - Edamam API for nutrition information
 
 
---------------------------------------------------------------------------------
-  STRUCTURAL COMPLEXITY
---------------------------------------------------------------------------------
+--- STRUCTURAL COMPLEXITY ---
 
-Structural complexity reflects the number and types of relationships between
-the structures (functions, classes, modules) in a program.
+Structural complexity is about how many connections there are between the
+different parts of the code and how complicated those connections are.
 
-ChefGPT keeps structural complexity LOW through a deliberate one-way dependency
-graph:
+We kept structural complexity low. Each feature file only talks to the Core
+files (Firebase and auth), not to other feature files. The dependency chain
+is simple:
 
-  app.py
-    --> backend/Components/__init__.py
-          --> each feature blueprint
-                --> backend/Core/auth_helper.py
-                --> backend/Core/firebase_init.py
+  app.py -> feature blueprints -> Core (auth + Firebase)
 
-No circular dependencies exist. backend/Core knows nothing about
-backend/Components. Individual feature blueprints do not import each other
-(with one exception: ingredient_suggestions.py imports get_favorites from
-favorites.py, which is an intentional direct reuse of an existing function
-rather than duplicating a database query).
-
-On the frontend, static/assistant.js imports only static/firebase-config.js.
-The auth and assistant scripts are separate modules with no dependency on each
-other.
-
-The Blueprint registration pattern in app.py further reduces structural coupling:
-adding a new feature requires writing one new file and adding one line to
-Components/__init__.py — the rest of the app does not change.
+There are no circular dependencies. Adding a new feature just means writing
+one new file and adding one import to Components/__init__.py. The rest of
+the app doesn't change.
 
 
---------------------------------------------------------------------------------
-  DATA COMPLEXITY
---------------------------------------------------------------------------------
+--- DATA COMPLEXITY ---
 
-Data complexity reflects the representations of data used and the relationships
-between data elements in a program.
+Data complexity is about how the data in the program is structured and how
+different pieces of data relate to each other.
 
-ChefGPT keeps data complexity LOW. There are only three persistent data shapes,
-all stored in Firestore:
+The data structures in this project are simple. There are only three types
+of data stored in the database:
 
-  favorites collection:
-    { uid, name, ingredients (comma-separated string),
-      instructions (pipe-separated string) }
+  - Favorites: a recipe name, ingredients list, and instructions stored
+    under the user's ID.
+  - Shopping list items: a name and a completed (true/false) flag, stored
+    under the user's ID.
+  - User profile: just their ID, email, and experience level.
 
-  users/{uid}/shopping_list sub-collection:
-    { name, completed (bool) }
+Recipe data from the AI is temporary -- it's shown on the results page but
+never saved to the database unless the user clicks "Save Recipe."
 
-  users/{uid} document:
-    { uid, email, experience_level }
-
-Recipe data returned from the AI is transient — it is never stored server-side.
-Its shape is: { name, description, core_ingredients[], additional_ingredients[],
-instructions[] }.
-
-The most important data relationship is the Firebase ID token flow:
-  1. Browser calls user.getIdToken() to get a signed JWT from Firebase.
-  2. JS sends it as "Authorization: Bearer <token>" with every API request.
-  3. auth_helper.py calls verify_id_token() to cryptographically confirm it.
-  4. The decoded user object's "uid" is used to scope all Firestore reads/writes.
-
-This single data path cleanly connects client identity to server-side data
-access without storing sessions or passwords.
+The most important data flow is the login token: the browser gets a token
+from Firebase, sends it with every API request, and the server uses it to
+figure out who's asking and what data they're allowed to see.
 
 
---------------------------------------------------------------------------------
-  DECISION COMPLEXITY
---------------------------------------------------------------------------------
+--- DECISION COMPLEXITY ---
 
-Decision complexity reflects the complexity of the decisions (branching logic)
-in a program.
+Decision complexity is about how many branching decisions (if/else logic) the
+program has to make and how complicated those decisions are.
 
-Decision complexity is kept INTENTIONALLY MINIMAL throughout the project. Most
-decision points are binary with clear, isolated outcomes:
+Most decisions in this project are simple yes/no choices:
 
-  Auth check (backend):
-    Is there a valid Firebase token? -> Yes: proceed. No: return 401.
-    This logic lives in one place: _require_user() in each blueprint (or
-    get_current_user() called directly).
+  - Is the user logged in? If not, return an error.
+  - Did Firebase connect successfully? If not, return an error.
+  - Was a budget provided? If so, include it in the AI prompt.
+  - Was a dietary filter provided? If so, include it in the AI prompt.
+  - Does the ingredient the user clicked already exist in the input? If so,
+    don't add it again.
 
-  Firebase availability:
-    Did Firebase initialize? -> Yes: proceed. No: return 503.
-    Checked once at the top of every API route.
-
-  Ownership check (favorites delete):
-    Does the document's uid match the requesting user's uid? -> Yes: delete.
-    No: return False (no deletion, no error to avoid leaking information).
-
-  AI prompt construction:
-    Was a budget provided? -> Conditionally include a budget sentence.
-    Was a dietary filter provided? -> Conditionally include a restriction sentence.
-    Both are simple ternary choices with no nested conditions.
-
-  assistant.js (most complex client-side decision tree):
-    Is the panel already open? -> Close it instead of opening.
-    Is the user signed in? -> If not, show "Please log in" and stop.
-    Is the item already in the input field? -> Skip the add if so.
-    Each of these is isolated in its own small function (closeCard/openCard,
-    loadData guard, addItem duplicate check), so no single function carries
-    more than one decision.
-
-The most intellectually complex part of the project is the AI prompt in
-recipes.py, but that complexity is DELEGATED to the LLM. The application code
-simply assembles inputs and handles two outcomes: valid JSON array returned,
-or exception thrown.
+Each decision is handled in one small place and doesn't rely on anything
+complicated. The most complex logic is in the AI prompt itself, but that
+complexity belongs to the AI model -- our code just sends the inputs and
+handles whether the response worked or failed.
 
 
---------------------------------------------------------------------------------
-  SECURITY
---------------------------------------------------------------------------------
+--- SECURITY ---
 
-Three concrete security measures are implemented:
+Three main security measures were used:
 
-  1. SERVER-SIDE TOKEN VERIFICATION
-     auth_helper.py uses the Firebase Admin SDK to call verify_id_token().
-     The Admin SDK validates the JWT signature against Google's public keys.
-     Clients cannot forge or tamper with tokens. This happens on every request
-     that touches user data.
+  1. Server-side login verification.
+     When the browser sends a login token with a request, the server doesn't
+     just trust it. It calls firebase_auth.verify_id_token() which checks the
+     token's signature against Google's servers. A user can't fake this.
 
-  2. OWNERSHIP ENFORCEMENT BEFORE DELETION
-     delete_favorite() in favorites.py reads the Firestore document and compares
-     its "uid" field against the requesting user's "uid" before calling .delete().
-     A logged-in user cannot delete another user's favorites even if they know
-     the Firestore document ID.
-     The shopping list avoids this problem architecturally: items are stored in
-     a sub-collection under the user's own document (users/{uid}/shopping_list),
-     so a query for any user's items automatically scopes to their own data.
+  2. Ownership check before deleting.
+     Before deleting a saved favorite, the code reads the record from the
+     database and checks that its owner ID matches the person making the
+     request. This stops one user from deleting another user's data even if
+     they somehow knew the record's ID.
 
-  3. XSS PREVENTION
-     Every place in the frontend where user-controlled data is written to
-     innerHTML uses an escapeHtml() function that escapes &, <, >, ", and '.
-     This applies to the favorites list, shopping list items, and all error
-     messages. Jinja2 auto-escapes template variables in the HTML templates by
-     default.
+  3. Preventing XSS attacks.
+     Any time user-typed text gets placed into the page's HTML by JavaScript,
+     it goes through an escapeHtml() function first. This replaces characters
+     like < and > so malicious HTML or scripts can't be injected into the page.
 
-  Additional notes:
-     - The Groq API key and Firebase Admin credentials are stored in .env
-       (server-side only, never sent to the browser).
-     - The Firebase client config in firebase-config.js is the public web
-       API key — it is safe to expose and intended to be public.
-     - .gitignore excludes .env and serviceAccountKey.json from version control.
+Secret keys (the Groq API key, Firebase credentials) are stored in the .env
+file on the server and never sent to the browser.
 
 
---------------------------------------------------------------------------------
-  RELIABILITY
---------------------------------------------------------------------------------
+--- RELIABILITY ---
 
-Five patterns address reliability across the project:
+Several things were done to make sure the app doesn't break or confuse users
+when something goes wrong:
 
-  1. GRACEFUL AI FAILURE
-     The results() route wraps get_recipes() in try/except. If the Groq API
-     call fails (invalid key, network error, malformed JSON response), the
-     template renders with an empty meals list and the exception message
-     displayed to the user. The app does not crash.
+  1. The AI call is wrapped in a try/except. If the Groq API fails or returns
+     something unexpected, the results page shows an error message instead of
+     crashing.
 
-  2. FIREBASE AVAILABILITY FLAG
-     firebase_init.py sets FIREBASE_AVAILABLE = False if initialization fails,
-     rather than throwing an unhandled exception. Every API route that needs
-     Firebase checks this flag first and returns a 503 with a descriptive message.
-     This means the app can still serve its HTML pages even if Firebase
-     credentials are misconfigured.
+  2. If Firebase fails to initialize at startup, a flag is set so every API
+     route can return a friendly error message instead of throwing a crash.
 
-  3. LOADING STATES AND STALE CONTENT CLEARING
-     The assistant panel clears old chips and shows "Thinking about your
-     favorites..." before every fetch, preventing stale suggestions from
-     persisting. The favorites and shopping list pages show "Loading..." until
-     the API responds. This prevents users from acting on outdated UI.
+  3. The assistant panel shows a loading message and clears old suggestions
+     before fetching new ones so users never see stale or misleading data.
 
-  4. FORCE-REFRESHED AUTH TOKENS
-     Favorites and shopping list pages call user.getIdToken(true) to force a
-     token refresh before making API requests. This prevents 401 errors caused
-     by an expired token that the Firebase SDK has not refreshed automatically.
+  4. The favorites and shopping list pages force-refresh the login token before
+     making requests, which prevents errors from expired tokens.
 
-  5. TRY/CATCH ON ALL FETCH CALLS
-     Every fetch() call in the templates is wrapped in try/catch. Network
-     failures and unexpected errors surface as user-friendly messages in the
-     page rather than silent broken states or uncaught console errors.
-
-  Additional reliability note:
-     The ingredient suggestion assistant uses a lazy-load pattern — it only
-     calls /api/ingredient-suggestions when the user explicitly opens the panel.
-     This avoids unnecessary network requests on page load and means a slow or
-     failed suggestion fetch does not affect the rest of the page.
+  5. All fetch() calls in the frontend are wrapped in try/catch so a network
+     failure shows a readable error message instead of silently doing nothing.
 
 
 ================================================================================
