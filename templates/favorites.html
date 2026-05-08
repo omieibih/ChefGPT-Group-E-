@@ -84,7 +84,7 @@
 
             // Load favorites from backend
             try {
-                const token = await user.getIdToken();
+                const token = await user.getIdToken(true);
                 const response = await fetch("/api/favorites", {
                     headers: { "Authorization": "Bearer " + token }
                 });

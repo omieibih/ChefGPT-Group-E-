@@ -203,7 +203,7 @@ class TestChefGPT(unittest.TestCase):
     # Error Handling Tests
     # -------------------------
 
-    @patch("app.Groq")
+    @patch("backend.Components.recipes.Groq")
     def test_results_page_shows_error_on_api_failure(self, mock_groq):
         """Results page should display error message if API call fails"""
         mock_groq.return_value.chat.completions.create.side_effect = Exception("API error")

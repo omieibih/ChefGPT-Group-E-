@@ -122,6 +122,10 @@
                 const res = await fetch("/api/shopping-list", {
                     headers: { "Authorization": "Bearer " + currentToken }
                 });
+                if (!res.ok) {
+                    const errorData = await res.json().catch(() => ({}));
+                    throw new Error(errorData.error || "Failed to load shopping list.");
+                }
                 const items = await res.json();
                 renderItems(items);
             } catch (e) {
@@ -178,7 +182,7 @@
             document.getElementById("logout-btn").addEventListener("click", () => {
                 signOut(auth).then(() => window.location.href = "/login");
             });
-            currentToken = await user.getIdToken();
+            currentToken = await user.getIdToken(true);
             await loadItems();
         });
     </script>
